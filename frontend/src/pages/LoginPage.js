@@ -18,7 +18,11 @@ export default function LoginPage() {
       loginUser(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      if (!err.response) {
+        setError('Unable to reach the server. It may be starting up — please wait a moment and try again.');
+      } else {
+        setError(err.response.data?.error || 'Login failed. Please try again.');
+      }
     } finally { setLoading(false); }
   };
 

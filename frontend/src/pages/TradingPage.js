@@ -76,7 +76,6 @@ export default function TradingPage() {
       getListings().then(r => setListings(r.data.data)).catch(() => {}),
     20000);
     return () => clearInterval(iv);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
