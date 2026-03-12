@@ -3,7 +3,7 @@ import axios from "axios";
 // Base API instance
 const API = axios.create({
   baseURL: "https://crypto-portfolio-manager-1.onrender.com/api",
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json"
   }
@@ -28,15 +28,17 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Skip interceptor handling for auth endpoints so login/register
+    // pages can display their own error messages
+    const url = error.config?.url || "";
+    const isAuthRequest = url.includes("/auth/login") || url.includes("/auth/register");
 
-    // Server not responding
-    if (!error.response) {
-      alert("Server not responding. Please try again later.");
+    if (isAuthRequest) {
       return Promise.reject(error);
     }
 
-    // Token expired or unauthorized
-    if (error.response.status === 401) {
+    // Token expired or unauthorized — redirect to login
+    if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }

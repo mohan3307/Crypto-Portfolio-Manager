@@ -21,7 +21,11 @@ export default function RegisterPage() {
       loginUser(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed.');
+      if (!err.response) {
+        setError('Unable to reach the server. It may be starting up — please wait a moment and try again.');
+      } else {
+        setError(err.response.data?.error || 'Registration failed.');
+      }
     } finally { setLoading(false); }
   };
 
