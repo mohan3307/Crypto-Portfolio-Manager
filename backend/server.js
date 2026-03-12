@@ -12,7 +12,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://crypto-portfolio-manager-f6jfhmd42-mohan3307s-projects.vercel.app'
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 const limiter = rateLimit({
