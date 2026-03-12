@@ -16,10 +16,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build"
   },
-<<<<<<< HEAD
-=======
  
->>>>>>> 1a6dbb600eeb9dd9f6140cee329a7eaf07209939
   "browserslist": {
     "production": [
       ">0.2%",
