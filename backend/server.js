@@ -11,7 +11,7 @@ const rateLimit = require('express-rate-limit');
 dotenv.config();
 
 const app = express();
-
+app.set('trust proxy', 1);
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -35,8 +35,8 @@ app.use('/api/market', require('./routes/market'));
 app.use('/api/user', require('./routes/user'));
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("✅ MongoDB Connected"))
-.catch(err => console.log("❌ MongoDB Error:", err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.log("❌ MongoDB Error:", err));
 
 const { refreshPriceCache } = require('./controllers/marketController');
 
