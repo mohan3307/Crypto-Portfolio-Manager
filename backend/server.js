@@ -16,9 +16,8 @@ app.set('trust proxy', 1);
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://crypto-portfolio-manager-one.vercel.app',
-    'https://crypto-portfolio-manager-wine.vercel.app',
-    'https://crypto-portfolio-manager-jtvoxidbl-mohan3307s-projects.vercel.app', // ← add this
+    'https://crypto-portfolio-manager-ufz4.vercel.app',
+    'https://crypto-portfolio-manager-87duykvvx-mohan3307s-projects.vercel.app', // ← add
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true
