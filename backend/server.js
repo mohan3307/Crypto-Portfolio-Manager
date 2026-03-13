@@ -51,5 +51,5 @@ const connectDB = async () => {
 };
 connectDB().catch(err => console.log("❌ MongoDB Error:", err));
 
-// ✅ Export app for Vercel (removed app.listen)
+// ✅ Export app for Vercel (no app.listen)
 module.exports = app;
