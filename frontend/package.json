@@ -28,7 +28,11 @@
       "last 1 safari version"
     ]
   },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
   "devDependencies": {
-    "eslint-plugin-react-hooks": "^7.0.1"
   }
 }
