@@ -20,13 +20,13 @@ function generateBook(midPrice, levels = 18) {
   let aTotal = 0, bTotal = 0;
   for (let i = 0; i < levels; i++) {
     const priceA = midPrice + spread / 2 + (i * midPrice * 0.0004) + Math.random() * midPrice * 0.0001;
-    const sizeA  = Math.pow(Math.random(), 1.8) * 8 + 0.05;
+    const sizeA = Math.pow(Math.random(), 1.8) * 8 + 0.05;
     const totalA = aTotal + sizeA * priceA;
     asks.push({ price: priceA, size: sizeA, total: sizeA * priceA, cumTotal: totalA });
     aTotal = totalA;
 
     const priceB = midPrice - spread / 2 - (i * midPrice * 0.0004) - Math.random() * midPrice * 0.0001;
-    const sizeB  = Math.pow(Math.random(), 1.8) * 8 + 0.05;
+    const sizeB = Math.pow(Math.random(), 1.8) * 8 + 0.05;
     const totalB = bTotal + sizeB * priceB;
     bids.push({ price: priceB, size: sizeB, total: sizeB * priceB, cumTotal: totalB });
     bTotal = totalB;
@@ -41,7 +41,7 @@ function generateTrades(midPrice, count = 20) {
     t -= Math.random() * 4000 + 500;
     const isBuy = Math.random() > 0.48;
     const price = midPrice * (1 + (Math.random() - 0.5) * 0.002);
-    const size  = Math.pow(Math.random(), 2) * 3 + 0.01;
+    const size = Math.pow(Math.random(), 2) * 3 + 0.01;
     trades.push({ time: t, price, size, side: isBuy ? 'buy' : 'sell' });
   }
   return trades.sort((a, b) => b.time - a.time);
@@ -53,13 +53,13 @@ function DepthChart({ asks, bids, midPrice }) {
     const canvas = canvasRef.current;
     if (!canvas || !asks.length || !bids.length) return;
     const ctx = canvas.getContext('2d');
-    const W = canvas.width  = canvas.offsetWidth;
+    const W = canvas.width = canvas.offsetWidth;
     const H = canvas.height = canvas.offsetHeight;
     ctx.fillStyle = 'var(--bg-void,#04070d)'; ctx.fillRect(0, 0, W, H);
 
     const allBids = [...bids].reverse();
     const allAsks = [...asks];
-    const maxCum  = Math.max(allBids[allBids.length - 1]?.cumTotal || 0, allAsks[allAsks.length - 1]?.cumTotal || 0);
+    const maxCum = Math.max(allBids[allBids.length - 1]?.cumTotal || 0, allAsks[allAsks.length - 1]?.cumTotal || 0);
     const allPrices = [...allBids.map(b => b.price), ...allAsks.map(a => a.price)];
     const minPr = Math.min(...allPrices), maxPr = Math.max(...allPrices);
     const toX = p => (p - minPr) / (maxPr - minPr) * W;
@@ -71,7 +71,7 @@ function DepthChart({ asks, bids, midPrice }) {
     ctx.beginPath();
     allBids.forEach((b, i) => {
       const x = toX(b.price), y = toY(b.cumTotal);
-      i === 0 ? ctx.moveTo(x, H) : null;
+      if (i === 0) ctx.moveTo(x, H);
       ctx.lineTo(x, y);
     });
     ctx.lineTo(toX(allBids[allBids.length - 1]?.price || minPr), H);
@@ -83,7 +83,7 @@ function DepthChart({ asks, bids, midPrice }) {
     ctx.beginPath();
     allAsks.forEach((a, i) => {
       const x = toX(a.price), y = toY(a.cumTotal);
-      i === 0 ? ctx.moveTo(x, H) : null;
+      if (i === 0) ctx.moveTo(x, H);
       ctx.lineTo(x, y);
     });
     ctx.lineTo(toX(allAsks[allAsks.length - 1]?.price || maxPr), H);
@@ -109,7 +109,7 @@ function DepthChart({ asks, bids, midPrice }) {
 
     // Labels
     ctx.fillStyle = '#3d5470'; ctx.font = '9px JetBrains Mono,monospace';
-    ctx.textAlign = 'left';  ctx.fillText(fmtP(minPr), 4, H - 2);
+    ctx.textAlign = 'left'; ctx.fillText(fmtP(minPr), 4, H - 2);
     ctx.textAlign = 'right'; ctx.fillText(fmtP(maxPr), W - 4, H - 2);
     ctx.textAlign = 'center'; ctx.fillText(fmtP(midPrice), mx, 12);
   }, [asks, bids, midPrice]);
@@ -118,10 +118,10 @@ function DepthChart({ asks, bids, midPrice }) {
 }
 
 export default function OrderBook({ midPrice = 45000 }) {
-  const [book,   setBook]   = useState(() => generateBook(midPrice));
+  const [book, setBook] = useState(() => generateBook(midPrice));
   const [trades, setTrades] = useState(() => generateTrades(midPrice));
-  const [tab,    setTab]    = useState('book');   // book | trades | depth
-  const [flash,  setFlash]  = useState({});
+  const [tab, setTab] = useState('book');   // book | trades | depth
+  const [flash, setFlash] = useState({});
   const prevBookRef = useRef({});
 
   // Simulate live updates

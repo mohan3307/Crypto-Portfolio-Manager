@@ -31,7 +31,7 @@ export default function MarketPage() {
     if (filter === 'losers') result = result.filter(c => c.change24h < 0);
     result.sort((a, b) => {
       let av = a[sortBy], bv = b[sortBy];
-      if (typeof av === 'string') av = av.toLowerCase(), bv = bv.toLowerCase();
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
       return sortDir === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
     });
     setFiltered(result);
@@ -77,7 +77,7 @@ export default function MarketPage() {
       {/* Controls */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
         <div className="search-bar" style={{ flex: 1, minWidth: '200px' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
           <input placeholder="Search coins..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="tabs" style={{ margin: 0 }}>
