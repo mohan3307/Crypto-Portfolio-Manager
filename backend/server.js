@@ -16,13 +16,14 @@ app.set('trust proxy', 1);
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://crypto-portfolio-manager-ufz4.vercel.app',
-    'https://crypto-portfolio-manager-87duykvvx-mohan3307s-projects.vercel.app', // ← add
-    process.env.FRONTEND_URL
+    'https://crypto-portfolio-manager-one.vercel.app',
+    'https://crypto-portfolio-manager-wine.vercel.app',
+    'https://crypto-portfolio-manager-jqh81p7ko-mohan3307s-projects.vercel.app', // ← new
+    'https://crypto-portfolio-manager-87duykvvx-mohan3307s-projects.vercel.app', // ← previous
+    process.env.REACT_APP_API_URL
   ].filter(Boolean),
   credentials: true
 }));
-
 app.use(express.json());
 
 // ✅ API test route
