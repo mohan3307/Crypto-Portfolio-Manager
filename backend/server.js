@@ -14,14 +14,13 @@ app.set('trust proxy', 1);
 
 // ✅ CORS
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://crypto-portfolio-manager-one.vercel.app',
-    'https://crypto-portfolio-manager-wine.vercel.app',
-    'https://crypto-portfolio-manager-jqh81p7ko-mohan3307s-projects.vercel.app', // ← new
-    'https://crypto-portfolio-manager-87duykvvx-mohan3307s-projects.vercel.app', // ← previous
-    process.env.REACT_APP_API_URL
-  ].filter(Boolean),
+  origin: (origin, callback) => {
+    if (!origin || origin.includes('mohan3307s-projects.vercel.app') || origin === 'http://localhost:3000') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
