@@ -15,11 +15,17 @@ app.set('trust proxy', 1);
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://crypto-portfolio-manager-f6jfhmd42-mohan3307s-projects.vercel.app'
-  ],
+    'https://crypto-portfolio-manager-f6jfhmd42-mohan3307s-projects.vercel.app',
+    'https://crypto-portfolio-manager-wine.vercel.app',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
   credentials: true
 }));
 app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('🚀 CryptoNova Backend API is running...');
+});
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
