@@ -17,8 +17,8 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://crypto-portfolio-manager-one.vercel.app',
-    'https://crypto-portfolio-manager-f6jfhmd42-mohan3307s-projects.vercel.app',
     'https://crypto-portfolio-manager-wine.vercel.app',
+    'https://crypto-portfolio-manager-jtvoxidbl-mohan3307s-projects.vercel.app', // ← add this
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true
