@@ -14,14 +14,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow local development and any vercel/render subdomains of the user
-    if (!origin || origin.includes('vercel.app') || origin.includes('onrender.com') || origin === 'http://localhost:3000') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Automatically allow the origin of whoever is calling the API
   credentials: true
 }));
 app.use(express.json());
