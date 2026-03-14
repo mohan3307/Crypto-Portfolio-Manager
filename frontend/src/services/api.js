@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base API instance
 const API = axios.create({
-  baseURL: 'https://crypto-portfolio-manager-ufz4.vercel.app/api'
+  baseURL: 'https://YOUR-NEW-RENDER-URL.onrender.com/api'
 });
 
 // ================= REQUEST INTERCEPTOR =================
