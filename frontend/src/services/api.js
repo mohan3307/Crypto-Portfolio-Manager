@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base API instance
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://crypto-portfolio-manager-2.onrender.com/api'
+  baseURL: (process.env.REACT_APP_API_URL || 'https://crypto-portfolio-manager-2.onrender.com').replace(/\/+$/, '') + '/api'
 });
 
 // ================= REQUEST INTERCEPTOR =================
