@@ -15,7 +15,8 @@ app.set('trust proxy', 1);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || origin.includes('mohan3307s-projects.vercel.app') || origin === 'http://localhost:3000') {
+    // Allow local development and any vercel/render subdomains of the user
+    if (!origin || origin.includes('vercel.app') || origin.includes('onrender.com') || origin === 'http://localhost:3000') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
