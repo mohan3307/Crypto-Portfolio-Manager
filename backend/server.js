@@ -13,10 +13,15 @@ dotenv.config();
 const app = express();
 app.set('trust proxy', 1);
 
-app.use(cors({
-  origin: true, // Automatically allow the origin of whoever is calling the API
-  credentials: true
-}));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 app.use(express.json());
 
 app.get('/', (req, res) => {
