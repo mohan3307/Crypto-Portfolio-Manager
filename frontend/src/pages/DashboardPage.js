@@ -31,7 +31,9 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 const COLORS = ['#3b82f6', '#00d4aa', '#f59e0b', '#8b5cf6', '#ff4757', '#06b6d4', '#10b981'];
 
 export default function DashboardPage() {
-  const { portfolio, trending, socket, listings } = useMarket();
+  const { socket, listings } = useMarket();
+  const [portfolio, setPortfolio] = useState(null);
+  const [trending, setTrending] = useState([]);
   const [showCommand, setShowCommand] = useState(false);
   const [workspace, setWorkspace] = useState('TACTICAL'); // TACTICAL or ANALYTICS
   const [alphaSignal, setAlphaSignal] = useState(null);
