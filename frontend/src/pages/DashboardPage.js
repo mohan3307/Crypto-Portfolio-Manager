@@ -57,6 +57,17 @@ export default function DashboardPage() {
     fetchAll();
   }, []);
 
+  useEffect(() => {
+    const handleKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommand(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
   if (loading) return (
     <div className="loading-spinner">
       <div className="spinner"></div>
@@ -96,17 +107,6 @@ export default function DashboardPage() {
   const btcDom = ((listings?.find(c => c.symbol === 'BTC')?.marketCap || 0) / totalMCap * 100);
   const ethDom = ((listings?.find(c => c.symbol === 'ETH')?.marketCap || 0) / totalMCap * 100);
   const altDom = Math.max(0, 100 - btcDom - ethDom);
-
-  useEffect(() => {
-    const handleKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setShowCommand(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
 
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto', padding: '0 10px', position: 'relative' }}>
