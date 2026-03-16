@@ -26,6 +26,8 @@ import AlertsPage from './pages/AlertsPage';
 import PaperTradingPage from './pages/PaperTradingPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ComparePage from './pages/ComparePage';
+import StrategyHub from './pages/StrategyHub';
+import RoadmapHub from './pages/RoadmapHub';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
