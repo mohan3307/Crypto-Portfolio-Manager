@@ -90,12 +90,10 @@ export default function DashboardPage() {
   };
 
   const topCoin = [...items].sort((a, b) => b.profitPct - a.profitPct)[0];
-  const totalMCap = listings.reduce((s, c) => s + c.marketCap, 0) || 1;
-  const btcDom = ((listings.find(c => c.symbol === 'BTC')?.marketCap || 0) / totalMCap * 100);
-  const ethDom = ((listings.find(c => c.symbol === 'ETH')?.marketCap || 0) / totalMCap * 100);
+  const totalMCap = listings?.reduce((s, c) => s + (c.marketCap || 0), 0) || 1;
+  const btcDom = ((listings?.find(c => c.symbol === 'BTC')?.marketCap || 0) / totalMCap * 100);
+  const ethDom = ((listings?.find(c => c.symbol === 'ETH')?.marketCap || 0) / totalMCap * 100);
   const altDom = Math.max(0, 100 - btcDom - ethDom);
-
-  const [showCommand, setShowCommand] = useState(false);
 
   useEffect(() => {
     const handleKey = (e) => {
