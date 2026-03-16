@@ -175,7 +175,7 @@ exports.refreshPriceCache = async (io) => {
       
       // Broadcast to all connected clients
       if (io) {
-        io.emit('priceUpdate', { listingCache, lastUpdated });
+        io.emit('priceUpdate', { data: listingCache, lastUpdated });
       }
       return;
     }
@@ -204,7 +204,7 @@ exports.refreshPriceCache = async (io) => {
 
     // Broadcast to all connected clients
     // Broadcast the full refresh
-    io.emit('priceUpdate', { data: priceCache, lastUpdated: lastUpdated });
+    io.emit('priceUpdate', { data: listingCache, lastUpdated });
     console.log(`[Market] Cache refreshed at ${lastUpdated.toLocaleTimeString()}. Broadcasted to clients.`);
     
     // Check for triggered alerts
