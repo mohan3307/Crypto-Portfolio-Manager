@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { useMarket } from '../../context/MarketContext';
 
 const RAW_HEADLINES = [
