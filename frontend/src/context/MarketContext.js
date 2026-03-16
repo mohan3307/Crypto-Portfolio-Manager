@@ -24,7 +24,7 @@ export const MarketProvider = ({ children }) => {
     }).catch(console.error);
 
     const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-    const newSocket = io(apiUrl);
+    const newSocket = io(apiUrl, { transports: ['websocket'] });
     setSocket(newSocket);
 
     newSocket.on('priceUpdate', (data) => {
