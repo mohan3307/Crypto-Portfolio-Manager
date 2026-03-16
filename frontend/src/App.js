@@ -68,6 +68,8 @@ function App() {
                     <Route path="trading" element={<TradingPage />} />
                     <Route path="paper" element={<PaperTradingPage />} />
                     <Route path="alerts" element={<AlertsPage />} />
+                    <Route path="strategy" element={<StrategyHub />} />
+                    <Route path="roadmap" element={<RoadmapHub />} />
                     <Route path="profile" element={<ProfilePage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/dashboard" />} />

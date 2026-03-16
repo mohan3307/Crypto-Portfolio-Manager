@@ -131,10 +131,24 @@ const getMockListings = () => [
   { id: 4039,  name: 'Civic',             symbol: 'CVC',   rank: 118, price: 0.1234,    change24h: 3.45,   marketCap: 120000000,     volume24h: 12000000    },
   { id: 5740,  name: 'Steem',             symbol: 'STEEM', rank: 119, price: 0.2345,    change24h: 2.34,   marketCap: 87000000,      volume24h: 5600000     },
   { id: 3794,  name: 'Arweave',           symbol: 'AR',    rank: 120, price: 23.45,     change24h: 9.78,   marketCap: 1500000000,    volume24h: 234000000   },
-].map(coin => ({
-  ...coin,
-  logo: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`
-}));
+].map(coin => {
+  // Generate random 7d sparkline points
+  const points = [];
+  let lastPrice = coin.price;
+  for(let i=0; i<20; i++) {
+    const change = (Math.random() - 0.5) * 0.05; // ±2.5% per point
+    lastPrice = lastPrice * (1 + change);
+    points.push(lastPrice);
+  }
+  
+  return {
+    ...coin,
+    circulatingSupply: Math.floor(coin.marketCap / coin.price),
+    maxSupply: coin.symbol === 'BTC' ? 21000000 : null,
+    sparkline7d: points,
+    logo: `https://s2.coinmarketcap.com/static/img/coins/64x64/${coin.id}.png`
+  };
+});
 
 // Add small random fluctuation to simulate live prices
 const fluctuate = (price) => {
@@ -268,15 +282,16 @@ exports.startTickerSimulation = (io) => {
   const sendWhaleAlert = () => {
     const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'PEPE'];
     const sym = symbols[Math.floor(Math.random() * symbols.length)];
-    const amount = (Math.random() * 50 + 10).toFixed(1);
-    const value = (amount * 50000).toLocaleString(); // Rough estimate
+    const amount = (Math.random() * 50 + 10); // Keep as number for calculation
+    const value = (amount * (priceCache[sym] || 50000)).toLocaleString(undefined, { maximumFractionDigits: 0 }); // Rough estimate, use current price if available
     const alert = {
         symbol: sym,
-        amount: amount,
+        amount: amount.toFixed(1), // Format for display
         value: value,
         from: "Unknown Wallet",
         to: "Binance",
-        time: new Date().toLocaleTimeString()
+        time: new Date().toLocaleTimeString(),
+        sentiment: Math.random() > 0.5 ? 'Bullish' : 'Neutral'
     };
     io.emit('whaleAlert', alert);
     
@@ -293,19 +308,145 @@ exports.startTickerSimulation = (io) => {
     const amount = (Math.random() * 200000 + 5000).toFixed(0);
     
     io.emit('liquidationUpdate', {
-      symbol: sym,
+      symbol: sym + '/USDT',
       side: side,
-      amount: parseInt(amount),
-      price: priceCache[sym] || 0,
+      amount: amount,
+      price: 50000 + Math.random() * 10000,
+      sentiment: side === 'short' ? 'Bullish' : 'Bearish',
       timestamp: Date.now()
     });
 
     const nextDelay = 3000 + Math.random() * 7000;
     setTimeout(sendLiquidation, nextDelay);
   };
+
+  // AI Trend Scanner Simulation
+  const sendAIPattern = () => {
+    const patterns = [
+      'Bullish Divergence', 'Bearish Engulfing', 'Falling Wedge', 
+      'Golden Cross', 'RSI Oversold Recovery', 'Head & Shoulders'
+    ];
+    const coins = ['BTC', 'ETH', 'SOL', 'MATIC', 'AVAX', 'DOT'];
+    
+    io.emit('aiPatternUpdate', {
+      symbol: coins[Math.floor(Math.random() * coins.length)],
+      pattern: patterns[Math.floor(Math.random() * patterns.length)],
+      timeframe: ['1H', '4H', '1D'][Math.floor(Math.random() * 3)],
+      confidence: Math.floor(Math.random() * 25 + 70), // 70-95%
+      sentiment: Math.random() > 0.4 ? 'Bullish' : 'Bearish',
+      timestamp: Date.now()
+    });
+
+    setTimeout(sendAIPattern, 120000 + Math.random() * 180000); // Every 2-5 mins
+  };
+
+  const sendFuturePrediction = () => {
+    const predictions = [
+      { coin: 'BTC', target: '105,000', probability: 68, timeframe: 'April 2026' },
+      { coin: 'ETH', target: '4,800', probability: 54, timeframe: 'May 2026' },
+      { coin: 'SOL', target: '250', probability: 42, timeframe: 'June 2026' },
+      { coin: 'BTC', target: '120,000', probability: 31, timeframe: 'Dec 2026' }
+    ];
+    io.emit('futurePredictionUpdate', predictions[Math.floor(Math.random() * predictions.length)]);
+    setTimeout(sendFuturePrediction, 300000); // Every 5 mins
+  };
+
+  const sendOrderBook = () => {
+    const symbols = ['BTC', 'ETH', 'SOL'];
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    const midPrice = priceCache[sym] || (sym === 'BTC' ? 67000 : sym === 'ETH' ? 3500 : 180);
+    
+    const bids = [];
+    const asks = [];
+    for(let i=0; i<10; i++) {
+      bids.push({ price: midPrice - (i * 0.5), size: Math.random() * 5 + 0.1 });
+      asks.push({ price: midPrice + (i * 0.5), size: Math.random() * 5 + 0.1 });
+    }
+    
+    io.emit('orderBookUpdate', { symbol: sym, bids, asks, timestamp: Date.now() });
+    setTimeout(sendOrderBook, 2000); // Every 2s for high-freq feel
+  };
+
+  const sendMacroStats = () => {
+    const stats = {
+      dxy: 104.2 + (Math.random() - 0.5) * 0.1,
+      spx: 5240 + (Math.random() - 0.5) * 10,
+      cpi: 3.2,
+      rates: 5.5,
+      bond10y: 4.25 + (Math.random() - 0.5) * 0.05
+    };
+    io.emit('macroUpdate', stats);
+    setTimeout(sendMacroStats, 10000);
+  };
+
+  const sendAlphaSignals = () => {
+    const signals = [
+      { type: 'QUANT', asset: 'BTC', signal: 'MACD Bearish Divergence (4H)', quality: 0.82 },
+      { type: 'VOL',   asset: 'ETH', signal: 'Imp Vol Expansion Imminent', quality: 0.75 },
+      { type: 'SCALP', asset: 'SOL', signal: 'RSI Oversold (15M)', quality: 0.64 },
+      { type: 'MACRO', asset: 'DXY', signal: 'Resistance Zone Hit', quality: 0.91 }
+    ];
+    io.emit('alphaSignalUpdate', signals[Math.floor(Math.random() * signals.length)]);
+    setTimeout(sendAlphaSignals, 15000);
+  };
+
+  const sendNeuralForecast = () => {
+    const symbols = ['BTC', 'ETH', 'SOL'];
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    const basePrice = priceCache[sym] || (sym === 'BTC' ? 67000 : sym === 'ETH' ? 3500 : 180);
+    
+    // Generate a "Ghost Path" (12 futuristic points)
+    const projection = [];
+    let last = basePrice;
+    for(let i=0; i<12; i++) {
+      const move = last * (0.005 * (Math.random() - 0.4)); // Biased slightly up
+      last += move;
+      projection.push(last);
+    }
+    
+    const telemetry = {
+      epoch: Math.floor(Math.random() * 500) + 100,
+      loss: (0.002 + Math.random() * 0.001).toFixed(6),
+      accuracy: (92 + Math.random() * 5).toFixed(2),
+      confidence: 0.7 + (Math.random() * 0.25)
+    };
+    
+    io.emit('neuralForecastUpdate', { symbol: sym, projection, telemetry, timestamp: Date.now() });
+    setTimeout(sendNeuralForecast, 12000);
+  };
+
+  const sendWhaleFlow = () => {
+    const flows = {
+      BTC: { inflow: Math.random() * 500, outflow: Math.random() * 450 },
+      ETH: { inflow: Math.random() * 3000, outflow: Math.random() * 3200 },
+      SOL: { inflow: Math.random() * 50000, outflow: Math.random() * 48000 }
+    };
+    io.emit('whaleFlowUpdate', flows);
+    setTimeout(sendWhaleFlow, 8000);
+  };
+
+  const sendSectorMetrics = () => {
+    const sectors = [
+      { name: 'Layer 1', weight: 45, perf24h: 2.4 },
+      { name: 'DeFi', weight: 15, perf24h: -1.2 },
+      { name: 'AI', weight: 25, perf24h: 8.5 },
+      { name: 'L2', weight: 10, perf24h: 3.1 },
+      { name: 'Gaming', weight: 5, perf24h: 0.8 }
+    ];
+    io.emit('sectorMetricsUpdate', sectors);
+    setTimeout(sendSectorMetrics, 20000);
+  };
   
   setTimeout(sendWhaleAlert, 30000);
   setTimeout(sendLiquidation, 10000);
+  setTimeout(sendAIPattern, 15000);
+  setTimeout(sendFuturePrediction, 20000);
+  setTimeout(sendOrderBook, 5000);
+  setTimeout(sendMacroStats, 8000);
+  setTimeout(sendAlphaSignals, 12000);
+  setTimeout(sendNeuralForecast, 6000);
+  setTimeout(sendWhaleFlow, 4000);
+  setTimeout(sendSectorMetrics, 15000);
 };
 
 const NEWS_POOL = [

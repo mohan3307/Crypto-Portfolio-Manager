@@ -16,13 +16,16 @@ const Icons = {
   Paper:     () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>,
   Alerts:    () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>,
   Profile:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  Strategy:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
+  Roadmap:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><path d="M9 18l6-6-6-6"/></svg>,
 };
 
 const NAV = [
   { section: 'Overview',  items: [{ path:'/dashboard', label:'Dashboard',    icon:'Dashboard' }] },
   { section: 'Portfolio', items: [{ path:'/portfolio',  label:'My Portfolio', icon:'Portfolio' }, { path:'/analytics',  label:'Analytics',    icon:'Analytics' }] },
   { section: 'Markets',   items: [{ path:'/market',    label:'Market',       icon:'Market' }, { path:'/compare',   label:'Compare',      icon:'Compare' }, { path:'/watchlist',  label:'Watchlist',    icon:'Watchlist' }, { path:'/trending',   label:'Trending',     icon:'Trending' }] },
-  { section: 'Trading',   items: [{ path:'/trading',   label:'Live Terminal', icon:'Trading' }, { path:'/paper',     label:'Paper Trading', icon:'Paper' }] },
+  {section: 'Trading',   items: [{ path:'/trading',   label:'Live Terminal', icon:'Trading' }, { path:'/paper',     label:'Paper Trading', icon:'Paper' }, { path:'/strategy',   label:'Strategy Hub',  icon:'Strategy' }] },
+  { section: 'Vision',    items: [{ path:'/roadmap',   label:'Future Roadmap', icon:'Roadmap' }] },
   { section: 'Tools',     items: [{ path:'/alerts',    label:'Price Alerts', icon:'Alerts' }, { path:'/profile',   label:'Profile',      icon:'Profile' }] },
 ];
 
@@ -30,7 +33,8 @@ const TITLES = {
   '/dashboard':'Dashboard', '/portfolio':'My Portfolio', '/analytics':'Analytics',
   '/market':'Market', '/compare':'Compare', '/watchlist':'Watchlist',
   '/trending':'Trending', '/trading':'Live Terminal', '/paper':'Paper Trading',
-  '/alerts':'Price Alerts', '/profile':'Profile',
+  '/alerts':'Price Alerts', '/profile':'Profile', '/strategy':'Strategy Hub',
+  '/roadmap':'Future Roadmap',
 };
 
 export default function Layout() {
