@@ -4,6 +4,7 @@ import OrderBook from '../components/Charts/OrderBook';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
 import TickerTape from '../components/Charts/TickerTape';
 import NewsFeed from '../components/Charts/NewsFeed';
+import LiquidationMap from '../components/Charts/LiquidationMap';
 import { getListings, getChartData } from '../services/api';
 import { formatCurrency, formatPercent } from '../utils/format';
 
@@ -237,9 +238,9 @@ export default function TradingPage() {
           <div style={{ borderLeft:'1px solid #1a2840', display:'flex', flexDirection:'column', overflow:'hidden' }}>
             {/* Tab bar */}
             <div style={{ display:'flex', borderBottom:'1px solid #1a2840', background:'#060b14', flexShrink:0 }}>
-              {[['ai','🤖 AI Signal'],['order','📒 Order Book'],['news','📰 News']].map(([v,lbl]) => (
+              {[['ai','🤖 AI Signal'],['order','📒 Order Book'],['news','📰 News'],['liq','🔥 Liquidations']].map(([v,lbl]) => (
                 <button key={v} onClick={() => setRightPanel(v)}
-                  style={{ flex:1, padding:'9px 6px', border:'none', borderBottom:`2px solid ${rightPanel===v ? coinColor : 'transparent'}`, background:'transparent', color: rightPanel===v ? coinColor : '#3d5470', fontSize:10, fontWeight:700, cursor:'pointer', transition:'0.15s', fontFamily:'inherit' }}>
+                  style={{ flex:1, padding:'9px 4px', border:'none', borderBottom:`2px solid ${rightPanel===v ? coinColor : 'transparent'}`, background:'transparent', color: rightPanel===v ? coinColor : '#3d5470', fontSize:9, fontWeight:700, cursor:'pointer', transition:'0.15s', fontFamily:'inherit' }}>
                   {lbl}
                 </button>
               ))}
@@ -248,8 +249,9 @@ export default function TradingPage() {
             {/* Tab content */}
             <div style={{ flex:1, overflow:'auto' }}>
               {rightPanel === 'ai'    && <div style={{ padding:10 }}><AIPredictionPanel coin={selected} prices={prices7d} /></div>}
-              {rightPanel === 'order' && <OrderBook midPrice={selected.price} />}
+              {rightPanel === 'order' && <OrderBook symbol={selected.symbol} midPrice={selected.price} />}
               {rightPanel === 'news'  && <div style={{ padding:'10px 12px' }}><NewsFeed /></div>}
+              {rightPanel === 'liq'   && <div style={{ padding:10 }}><LiquidationMap /></div>}
             </div>
           </div>
         )}

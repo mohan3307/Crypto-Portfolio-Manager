@@ -1,79 +1,85 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { toast } from 'react-toastify';
+import { getAlerts, createAlert, toggleAlert as apiToggleAlert, deleteAlert as apiDeleteAlert } from '../services/api';
+import { useMarket } from './MarketContext';
+import { useAuth } from './AuthContext';
 
 const AlertsContext = createContext();
 
 export const AlertsProvider = ({ children }) => {
-  const [alerts, setAlerts] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cn-alerts') || '[]'); } catch { return []; }
-  });
-  const [triggeredIds, setTriggeredIds] = useState(new Set());
-  const pricesRef = useRef({});
+  const { user } = useAuth();
+  const { socket } = useMarket();
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Persist alerts
+  // Fetch alerts on mount or user change
   useEffect(() => {
-    localStorage.setItem('cn-alerts', JSON.stringify(alerts));
-  }, [alerts]);
+    if (user) {
+      setLoading(true);
+      getAlerts()
+        .then(res => {
+          setAlerts(res.data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch alerts:', err);
+          setLoading(false);
+        });
+    } else {
+      setAlerts([]);
+    }
+  }, [user]);
 
-  const addAlert = (alert) => {
-    const newAlert = {
-      id: Date.now().toString(),
-      symbol: alert.symbol.toUpperCase(),
-      coinName: alert.coinName,
-      type: alert.type,       // 'above' | 'below' | 'change_pct'
-      value: parseFloat(alert.value),
-      note: alert.note || '',
-      createdAt: new Date().toISOString(),
-      triggered: false,
-      active: true,
-    };
-    setAlerts(prev => [newAlert, ...prev]);
-    toast.success(`Alert set for ${alert.coinName}`);
-    return newAlert;
-  };
+  // Handle real-time alert triggers from socket
+  useEffect(() => {
+    if (socket) {
+      socket.on('priceAlertTriggered', (data) => {
+        // Double check it's for this user (server broadcasts for now)
+        if (data.userId === user?.id) {
+          toast.error(data.message, { autoClose: 10000 });
+          
+          if (Notification.permission === 'granted') {
+            new Notification('CryptoNova Pro Alert', { body: data.message, icon: '/favicon.ico' });
+          }
 
-  const removeAlert = (id) => {
-    setAlerts(prev => prev.filter(a => a.id !== id));
-  };
-
-  const toggleAlert = (id) => {
-    setAlerts(prev => prev.map(a => a.id === id ? { ...a, active: !a.active } : a));
-  };
-
-  const clearTriggered = () => {
-    setAlerts(prev => prev.filter(a => !a.triggered));
-  };
-
-  // Check alerts against live prices (called by market polling)
-  const checkAlerts = (prices) => {
-    pricesRef.current = prices;
-    setAlerts(prev => prev.map(alert => {
-      if (!alert.active || alert.triggered || triggeredIds.has(alert.id)) return alert;
-      const currentPrice = prices[alert.symbol];
-      if (!currentPrice) return alert;
-
-      let fired = false;
-      let message = '';
-
-      if (alert.type === 'above' && currentPrice >= alert.value) {
-        fired = true;
-        message = `🚨 ${alert.coinName} crossed ABOVE $${alert.value.toLocaleString()}`;
-      } else if (alert.type === 'below' && currentPrice <= alert.value) {
-        fired = true;
-        message = `🚨 ${alert.coinName} dropped BELOW $${alert.value.toLocaleString()}`;
-      }
-
-      if (fired) {
-        toast.error(message, { autoClose: 8000 });
-        // Browser notification
-        if (Notification.permission === 'granted') {
-          new Notification('CryptoNova Alert', { body: message, icon: '/favicon.ico' });
+          // Update local state to show as triggered
+          setAlerts(prev => prev.map(a => 
+            a._id === data.alertId ? { ...a, triggered: true, active: false, triggeredPrice: data.price, triggeredAt: new Date().toISOString() } : a
+          ));
         }
-        setTriggeredIds(s => new Set([...s, alert.id]));
-        return { ...alert, triggered: true, triggeredAt: new Date().toISOString(), triggeredPrice: currentPrice };
-      }
-      return alert;
-    }));
+      });
+      return () => socket.off('priceAlertTriggered');
+    }
+  }, [socket, user]);
+
+  const addAlert = async (alertData) => {
+    try {
+      const res = await createAlert(alertData);
+      setAlerts(prev => [res.data, ...prev]);
+      toast.success(`Alert set for ${alertData.coinName}`);
+      return res.data;
+    } catch (err) {
+      toast.error('Failed to create alert');
+      throw err;
+    }
+  };
+
+  const removeAlert = async (id) => {
+    try {
+      await apiDeleteAlert(id);
+      setAlerts(prev => prev.filter(a => a._id !== id));
+      toast.success('Alert removed');
+    } catch (err) {
+      toast.error('Failed to remove alert');
+    }
+  };
+
+  const toggleAlertStatus = async (id) => {
+    try {
+      const res = await apiToggleAlert(id);
+      setAlerts(prev => prev.map(a => a._id === id ? res.data : a));
+      toast.success(`Alert ${res.data.active ? 'activated' : 'deactivated'}`);
+    } catch (err) {
+      toast.error('Failed to toggle alert');
+    }
   };
 
   const requestPermission = async () => {
@@ -83,7 +89,7 @@ export const AlertsProvider = ({ children }) => {
   };
 
   return (
-    <AlertsContext.Provider value={{ alerts, addAlert, removeAlert, toggleAlert, clearTriggered, checkAlerts, requestPermission }}>
+    <AlertsContext.Provider value={{ alerts, loading, addAlert, removeAlert, toggleAlert: toggleAlertStatus, requestPermission }}>
       {children}
     </AlertsContext.Provider>
   );

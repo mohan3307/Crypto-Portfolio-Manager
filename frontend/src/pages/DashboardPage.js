@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
-import { getPortfolio, getTrending, getChartData, getListings } from '../services/api';
+import { getPortfolio, getTrending, getChartData } from '../services/api';
+import { useMarket } from '../context/MarketContext';
 import { formatCurrency, formatPercent, getChangeClass } from '../utils/format';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
 import MarketHeatmap from '../components/Charts/MarketHeatmap';
@@ -14,9 +15,9 @@ ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointE
 const COLORS = ['#3b82f6','#00d4aa','#f59e0b','#8b5cf6','#ff4757','#06b6d4','#10b981'];
 
 export default function DashboardPage() {
+  const { listings, prices } = useMarket();
   const [portfolio, setPortfolio] = useState(null);
   const [trending,  setTrending]  = useState(null);
-  const [listings,  setListings]  = useState([]);
   const [btcChart,  setBtcChart]  = useState([]);
   const [btcPrices, setBtcPrices] = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -25,10 +26,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [p, t, c, l] = await Promise.all([getPortfolio(), getTrending(), getChartData('BTC','7d'), getListings()]);
+        const [p, t, c] = await Promise.all([getPortfolio(), getTrending(), getChartData('BTC','7d')]);
         setPortfolio(p.data);
         setTrending(t.data);
-        setListings(l.data.data || []);
         const pts = c.data.data;
         setBtcChart(pts);
         setBtcPrices(pts.map(d => d.price));
@@ -36,8 +36,6 @@ export default function DashboardPage() {
       finally { setLoading(false); }
     };
     fetchAll();
-    const interval = setInterval(fetchAll, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) return (

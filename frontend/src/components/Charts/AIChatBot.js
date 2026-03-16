@@ -202,11 +202,26 @@ export default function AIChatBot() {
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', text: userText, time }]);
     setInput('');
     setIsTyping(true);
-    setTimeout(() => {
-      const response = getAIResponse(userText);
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: response, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
-      setIsTyping(false);
-    }, 600 + Math.random() * 800);
+    
+    // Call our intelligent backend AI
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/ai/ask`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ message: userText })
+    })
+      .then(res => res.json())
+      .then(data => {
+        const response = data.response;
+        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: response, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+      })
+      .catch(err => {
+        console.error("AI Error:", err);
+        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: "Sorry, I'm having trouble connecting to my brain right now. Please try again later!", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+      })
+      .finally(() => setIsTyping(false));
   };
 
   const handleKey = (e) => {

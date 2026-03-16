@@ -75,4 +75,12 @@ export const updateProfile = (data) =>
 export const changePassword = (data) =>
   API.put("/user/password", data);
 
+
+// ================= ALERTS =================
+export const getAlerts = () => API.get("/alerts");
+export const createAlert = (data) => API.post("/alerts", data);
+export const toggleAlert = (id) => API.patch(`/alerts/${id}/toggle`);
+export const deleteAlert = (id) => API.delete(`/alerts/${id}`);
+
+
 export default API;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useMarket } from '../../context/MarketContext';
 
 const RAW_HEADLINES = [
   { headline: 'Bitcoin surges past $70K as institutional demand continues to grow', sentiment: 'bullish', coin: 'BTC', time: '2m ago' },
@@ -6,29 +6,6 @@ const RAW_HEADLINES = [
   { headline: 'SEC approves three more spot Bitcoin ETF applications from major funds', sentiment: 'bullish', coin: 'BTC', time: '11m ago' },
   { headline: 'Solana decentralized exchanges surpass $50B monthly trading volume', sentiment: 'bullish', coin: 'SOL', time: '18m ago' },
   { headline: 'Crypto market cap reaches $2.8 trillion, highest since November 2021', sentiment: 'bullish', coin: 'TOTAL', time: '25m ago' },
-  { headline: 'PEPE and DOGE lead meme coin rally with 20%+ gains in 24 hours', sentiment: 'bullish', coin: 'PEPE', time: '33m ago' },
-  { headline: 'Federal Reserve signals potential rate cuts — boosting risk assets', sentiment: 'bullish', coin: 'MACRO', time: '41m ago  ' },
-  { headline: 'Ripple wins major legal battle; XRP surges 8% on the news', sentiment: 'bullish', coin: 'XRP', time: '52m ago' },
-  { headline: 'MicroStrategy increases Bitcoin holdings to 200,000 BTC', sentiment: 'bullish', coin: 'BTC', time: '1h ago' },
-  { headline: 'Chainlink CCIP mainnet sees explosive DeFi protocol adoption', sentiment: 'bullish', coin: 'LINK', time: '1h ago' },
-  { headline: 'Binance reports record $120B monthly trading volume for Q1 2025', sentiment: 'bullish', coin: 'BNB', time: '2h ago' },
-  { headline: 'TON blockchain onboards 200 million Telegram users to Web3', sentiment: 'bullish', coin: 'TON', time: '2h ago' },
-  { headline: 'Bitcoin mining difficulty hits new ATH as hashrate surges', sentiment: 'neutral', coin: 'BTC', time: '3h ago' },
-  { headline: 'Crypto hedge funds report average 85% returns in 2024', sentiment: 'bullish', coin: 'FUND', time: '3h ago' },
-  { headline: 'Crypto exchange outflows increase — possible accumulation signal', sentiment: 'neutral', coin: 'BTC', time: '4h ago' },
-  { headline: 'China reiterates crypto ban enforcement; markets dip then recover', sentiment: 'bearish', coin: 'TETHER', time: '5h ago' },
-  { headline: 'Altcoin season index hits 78 — all coins outperforming Bitcoin', sentiment: 'bullish', coin: 'ALT', time: '5h ago' },
-  { headline: 'Ethereum gas fees average 3 gwei in record low congestion period', sentiment: 'bullish', coin: 'ETH', time: '6h ago' },
-  { headline: 'Avalanche announces $100M DeFi ecosystem grants program', sentiment: 'bullish', coin: 'AVAX', time: '7h ago' },
-  { headline: 'NFT market sees revival with 42% volume increase week-over-week', sentiment: 'bullish', coin: 'NFT', time: '8h ago' },
-  { headline: 'Central banks worldwide accelerating CBDC development programs', sentiment: 'neutral', coin: 'MACRO', time: '9h ago' },
-  { headline: 'Dogecoin whale accumulates $300M position ahead of DOGE ETF news', sentiment: 'bullish', coin: 'DOGE', time: '10h ago' },
-  { headline: 'Render Network surges 15% on AI compute demand boom', sentiment: 'bullish', coin: 'RNDR', time: '11h ago' },
-  { headline: 'Polkadot parachains reach 1B+ total transactions milestone', sentiment: 'bullish', coin: 'DOT', time: '12h ago' },
-  { headline: 'Galaxy Digital reports $2.1B crypto VC funding in Q1 2025', sentiment: 'bullish', coin: 'VC', time: '13h ago' },
-  { headline: 'Cardano Hydra Layer-2 achieves 1M TPS in testnet benchmark', sentiment: 'bullish', coin: 'ADA', time: '14h ago' },
-  { headline: 'Bitcoin ETFs see record $2.4B net inflows in single day', sentiment: 'bullish', coin: 'BTC', time: '1d ago' },
-  { headline: 'Stablecoin supply surpasses $200B as institutional demand grows', sentiment: 'neutral', coin: 'USDT', time: '1d ago' },
 ];
 
 const SENTIMENT_CONFIG = {
@@ -38,11 +15,15 @@ const SENTIMENT_CONFIG = {
 };
 
 export default function NewsFeed({ compact = false }) {
-  const [headlines] = useState(() => [...RAW_HEADLINES].sort(() => Math.random() - 0.5));
+  const { newsHeadlines } = useMarket();
   const [current, setCurrent] = useState(0);
   const [flash, setFlash]     = useState(false);
 
+  // Combine live news with initial fallback headlines
+  const headlines = newsHeadlines.length > 0 ? newsHeadlines : RAW_HEADLINES;
+
   useEffect(() => {
+    if (headlines.length === 0) return;
     const iv = setInterval(() => {
       setFlash(true);
       setTimeout(() => {

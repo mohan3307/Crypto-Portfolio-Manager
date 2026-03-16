@@ -11,6 +11,15 @@ const rateLimit = require('express-rate-limit');
 dotenv.config();
 
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
@@ -39,6 +48,8 @@ app.use('/api/portfolio', require('./routes/portfolio'));
 app.use('/api/watchlist', require('./routes/watchlist'));
 app.use('/api/market', require('./routes/market'));
 app.use('/api/user', require('./routes/user'));
+app.use('/api/ai', require('./routes/ai'));
+app.use('/api/alerts', require('./routes/alerts'));
 
 mongoose.connect(process.env.MONGO_URI, {
   serverSelectionTimeoutMS: 30000,
@@ -47,14 +58,20 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.log("❌ MongoDB Error:", err));
 
-const { refreshPriceCache } = require('./controllers/marketController');
+const marketController = require('./controllers/marketController');
 
-cron.schedule('*/30 * * * * *', async () => {
-  await refreshPriceCache();
+// Initial cache refresh and start ticker/news simulation
+marketController.refreshPriceCache(io);
+marketController.startTickerSimulation(io);
+marketController.startNewsSimulation(io);
+
+// Cron job to refresh full listings cache every 30 seconds
+cron.schedule('*/30 * * * * *', () => {
+    marketController.refreshPriceCache(io);
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
 

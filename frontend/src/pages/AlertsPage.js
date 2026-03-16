@@ -1,8 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { useAlerts } from '../context/AlertsContext';
-import { getListings } from '../services/api';
-import { formatCurrency } from '../utils/format';
+import { useMarket } from '../context/MarketContext';
 
 function CreateAlertModal({ listings, onClose }) {
   const { addAlert, requestPermission } = useAlerts();
@@ -22,8 +18,10 @@ function CreateAlertModal({ listings, onClose }) {
     if (!selected) return toast.error('Select a coin first');
     if (!value || isNaN(value)) return toast.error('Enter a valid price');
     await requestPermission();
-    addAlert({ symbol: selected.symbol, coinName: selected.name, type, value, note });
-    onClose();
+    try {
+      await addAlert({ symbol: selected.symbol, coinName: selected.name, type, value, note });
+      onClose();
+    } catch (err) {}
   };
 
   const currentPrice = selected?.price;
@@ -36,7 +34,6 @@ function CreateAlertModal({ listings, onClose }) {
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
-        {/* Coin search */}
         <div className="form-group" style={{ position: 'relative' }}>
           <label className="form-label">Cryptocurrency</label>
           <input className="form-input" placeholder="Search coin…"
@@ -44,7 +41,7 @@ function CreateAlertModal({ listings, onClose }) {
           {search && !selected && filtered.length > 0 && (
             <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', maxHeight: 220, overflowY: 'auto' }}>
               {filtered.map(c => (
-                <div key={c.id} onMouseDown={() => { setSelected(c); setSearch(c.name); setValue(c.price.toFixed(2)); }}
+                <div key={c.id || c.symbol} onMouseDown={() => { setSelected(c); setSearch(c.name); setValue(c.price.toFixed(2)); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -65,7 +62,6 @@ function CreateAlertModal({ listings, onClose }) {
           </div>
         )}
 
-        {/* Alert type */}
         <div className="form-group">
           <label className="form-label">Alert Condition</label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -105,7 +101,7 @@ function CreateAlertModal({ listings, onClose }) {
 
 function AlertCard({ alert, currentPrice }) {
   const { removeAlert, toggleAlert } = useAlerts();
-  const progress = currentPrice && alert.type !== 'change_pct'
+  const progress = currentPrice 
     ? Math.min(100, Math.max(0, alert.type === 'above'
         ? (currentPrice / alert.value) * 100
         : (alert.value / currentPrice) * 100))
@@ -131,19 +127,18 @@ function AlertCard({ alert, currentPrice }) {
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
           {!alert.triggered && (
-            <button onClick={() => toggleAlert(alert.id)} title={alert.active ? 'Pause' : 'Resume'}
+            <button onClick={() => toggleAlert(alert._id)} title={alert.active ? 'Pause' : 'Resume'}
               style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>
               {alert.active ? '⏸' : '▶'}
             </button>
           )}
-          <button onClick={() => removeAlert(alert.id)}
+          <button onClick={() => removeAlert(alert._id)}
             style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--red-bg)', background: 'var(--red-bg)', color: 'var(--red)', fontSize: 12, cursor: 'pointer' }}>
             ✕
           </button>
         </div>
       </div>
 
-      {/* Progress bar */}
       {!alert.triggered && currentPrice && (
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
@@ -169,24 +164,16 @@ function AlertCard({ alert, currentPrice }) {
 }
 
 export default function AlertsPage() {
-  const { alerts, clearTriggered } = useAlerts();
+  const { alerts, loading } = useAlerts();
+  const { listings, prices } = useMarket();
   const [showModal, setShowModal] = useState(false);
-  const [listings, setListings] = useState([]);
-  const [prices, setPrices] = useState({});
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    getListings().then(res => {
-      const data = res.data.data;
-      setListings(data);
-      const p = {}; data.forEach(c => { p[c.symbol] = c.price; });
-      setPrices(p);
-    });
-    const i = setInterval(() => {
-      getListings().then(res => { const p = {}; res.data.data.forEach(c => { p[c.symbol] = c.price; }); setPrices(p); });
-    }, 15000);
-    return () => clearInterval(i);
-  }, []);
+  if (loading) return (
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="spinner"></div>
+    </div>
+  );
 
   const filtered = alerts.filter(a =>
     filter === 'all' ? true : filter === 'active' ? a.active && !a.triggered : a.triggered
@@ -199,17 +186,13 @@ export default function AlertsPage() {
       <div className="page-header">
         <div>
           <div className="page-title">Price Alerts <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 8 }}>{activeCount} active</span></div>
-          <div className="page-subtitle">Real-time notifications when prices hit your targets</div>
+          <div className="page-subtitle">Real-time notifications managed on the backend and pushed to your terminal</div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          {triggeredCount > 0 && (
-            <button className="btn btn-ghost" onClick={clearTriggered}>Clear Triggered ({triggeredCount})</button>
-          )}
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Alert</button>
         </div>
       </div>
 
-      {/* Stats row */}
       <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)', marginBottom: 24 }}>
         <div className="stat-card blue">
           <div className="stat-label">Total Alerts</div>
@@ -225,14 +208,12 @@ export default function AlertsPage() {
         </div>
       </div>
 
-      {/* Filter tabs */}
       <div className="tabs">
         {[['all', 'All'], ['active', '🔔 Active'], ['triggered', '✅ Triggered']].map(([v, l]) => (
           <button key={v} className={`tab ${filter === v ? 'active' : ''}`} onClick={() => setFilter(v)}>{l}</button>
         ))}
       </div>
 
-      {/* Browser notification prompt */}
       {'Notification' in window && Notification.permission === 'default' && (
         <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 'var(--radius)', padding: '12px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 13 }}>🔔 Enable browser notifications to get alerts even when this tab isn't focused</span>
@@ -252,7 +233,7 @@ export default function AlertsPage() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 14 }}>
           {filtered.map(alert => (
-            <AlertCard key={alert.id} alert={alert} currentPrice={prices[alert.symbol]} />
+            <AlertCard key={alert._id} alert={alert} currentPrice={prices[alert.symbol]} />
           ))}
         </div>
       )}

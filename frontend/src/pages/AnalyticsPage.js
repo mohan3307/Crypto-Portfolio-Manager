@@ -216,6 +216,28 @@ export default function AnalyticsPage() {
     portBeta += parseFloat(metrics[sym].beta) * w;
   });
 
+  // Health Score Logic
+  const diversificationScore = Math.min(items.length * 10, 40); // Max 4 items for full diversification bonus
+  const correlationFactor = corrMatrix.length > 1 ? (1 - (corrMatrix.flat().reduce((a, b) => a + b, 0) / (corrMatrix.length ** 2))) : 0.5;
+  const volScore = Math.max(0, 30 - (portVol / 5)); // Reward low volatility
+  const finalHealthScore = Math.round(diversificationScore + (correlationFactor * 30) + volScore + (portSharpe > 1 ? 10 : 0));
+  
+  // Benchmarking Logic (Portfolio vs BTC)
+  const days = 30;
+  const portfolioBenchData = Array.from({ length: days }).map((_, d) => {
+    let dayVal = 0;
+    items.forEach(item => {
+      const hist = priceHistory[item.symbol];
+      if (hist && hist[d]) {
+        const weight = item.currentValue / totalVal;
+        dayVal += (hist[d] / hist[0]) * 100 * weight;
+      }
+    });
+    return dayVal || 100;
+  });
+  const btcBenchData = btcHistory.map(p => (p / btcHistory[0]) * 100);
+  const alpha = (portfolioBenchData[days-1] - btcBenchData[days-1]).toFixed(1);
+
   // Allocation pie data for bar
   const allocationSorted = [...items].sort((a, b) => b.currentValue - a.currentValue);
   const COLORS = ['#3b82f6', '#00d4aa', '#f59e0b', '#8b5cf6', '#ff4757', '#06b6d4', '#10b981', '#ec4899'];
@@ -226,6 +248,65 @@ export default function AnalyticsPage() {
         <div>
           <div className="page-title">Portfolio Analytics</div>
           <div className="page-subtitle">30-day risk metrics, drawdown analysis, correlation matrix</div>
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
+           <button className="btn btn-ghost btn-sm" onClick={() => window.print()}>⎙ Export Statement</button>
+        </div>
+      </div>
+
+      {/* Health Score & High Level Overview */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: 24, marginBottom: 24 }}>
+        {/* Health Score Card */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '30px 20px' }}>
+          <div style={{ position: 'relative', width: 140, height: 140, marginBottom: 20 }}>
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="64" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+              <circle cx="70" cy="70" r="64" fill="none" stroke={finalHealthScore > 70 ? 'var(--green)' : 'var(--gold)'} strokeWidth="8" 
+                strokeDasharray={`${2 * Math.PI * 64}`} 
+                strokeDashoffset={`${2 * Math.PI * 64 * (1 - (finalHealthScore / 100))}`}
+                strokeLinecap="round" transform="rotate(-90 70 70)" />
+            </svg>
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+              <div style={{ fontSize: 36, fontWeight: 900, color: 'var(--text-primary)' }}>{finalHealthScore}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Health Score</div>
+            </div>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 16, color: finalHealthScore > 70 ? 'var(--green)' : 'var(--gold)', marginBottom: 6 }}>
+            {finalHealthScore > 80 ? 'Elite Portfolio' : finalHealthScore > 60 ? 'Healthy Mix' : 'High Risk Profile'}
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            {finalHealthScore > 70 
+              ? `Your portfolio is well-balanced across ${items.length} assets with healthy risk markers.`
+              : "Consider diversifying into less correlated assets to improve your security score."}
+          </p>
+        </div>
+
+        {/* Benchmarking Chart */}
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Benchmarking (Normalized 30d)</span>
+            <div style={{ display: 'flex', gap: 12, fontSize: 10 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: 2 }} /> Portfolio</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: 'var(--gold)', borderRadius: 2 }} /> Bitcoin</span>
+            </div>
+          </div>
+          <div style={{ height: 200, position: 'relative' }}>
+             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                {portfolioBenchData.map((v, i) => {
+                  const btcV = btcBenchData[i];
+                  const maxH = Math.max(...portfolioBenchData, ...btcBenchData);
+                  return (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
+                      <div style={{ height: `${(v / maxH) * 100}%`, background: 'var(--accent)', opacity: 0.6, width: '100%', borderRadius: '1px 1px 0 0' }} />
+                      <div style={{ height: `${(btcV / maxH) * 100}%`, background: 'var(--gold)', opacity: 0.3, width: '100%', borderRadius: '1px 1px 0 0' }} />
+                    </div>
+                  );
+                })}
+             </div>
+             <div style={{ position: 'absolute', top: 10, left: 10, fontSize: 11, color: alpha >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
+               {alpha >= 0 ? `+${alpha}% Alpha vs BTC` : `${alpha}% Underperforming BTC`}
+             </div>
+          </div>
         </div>
       </div>
 

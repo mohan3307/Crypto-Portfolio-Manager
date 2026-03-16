@@ -142,7 +142,7 @@ const fluctuate = (price) => {
   return parseFloat((price * (1 + pct)).toFixed(8));
 };
 
-exports.refreshPriceCache = async () => {
+exports.refreshPriceCache = async (io) => {
   try {
     if (!CMC_KEY || CMC_KEY === 'your_coinmarketcap_api_key_here') {
       // Use mock data with fluctuation
@@ -158,6 +158,11 @@ exports.refreshPriceCache = async () => {
       priceCache = {};
       listingCache.forEach(c => { priceCache[c.symbol] = c.price; });
       lastUpdated = new Date();
+      
+      // Broadcast to all connected clients
+      if (io) {
+        io.emit('priceUpdate', { listingCache, lastUpdated });
+      }
       return;
     }
 
@@ -182,9 +187,166 @@ exports.refreshPriceCache = async () => {
     priceCache = {};
     listingCache.forEach(c => { priceCache[c.symbol] = c.price; });
     lastUpdated = new Date();
-  } catch (err) {
-    console.error('Price cache refresh error:', err.message);
+
+    // Broadcast to all connected clients
+    // Broadcast the full refresh
+    io.emit('priceUpdate', { data: priceCache, lastUpdated: lastUpdated });
+    console.log(`[Market] Cache refreshed at ${lastUpdated.toLocaleTimeString()}. Broadcasted to clients.`);
+    
+    // Check for triggered alerts
+    checkGlobalAlerts(io);
+  } catch (error) {
+    console.error('Error refreshing price cache:', error);
   }
+};
+
+const Alert = require('../models/Alert');
+const checkGlobalAlerts = async (io) => {
+  try {
+    const activeAlerts = await Alert.find({ active: true, triggered: false });
+    if (activeAlerts.length === 0) return;
+
+    for (const alert of activeAlerts) {
+      const currentPrice = priceCache[alert.symbol];
+      if (!currentPrice) continue;
+
+      let triggered = false;
+      if (alert.type === 'above' && currentPrice >= alert.value) triggered = true;
+      if (alert.type === 'below' && currentPrice <= alert.value) triggered = true;
+
+      if (triggered) {
+        alert.triggered = true;
+        alert.triggeredPrice = currentPrice;
+        alert.triggeredAt = new Date();
+        alert.active = false;
+        await alert.save();
+
+        // Push to specific user via socket room or broadcast globally if simple
+        // For simplicity in this demo, we broadcast to all, but include userId
+        io.emit('priceAlertTriggered', {
+          userId: alert.userId,
+          alertId: alert._id,
+          message: `🚨 ${alert.coinName} crossed ${alert.type === 'above' ? 'ABOVE' : 'BELOW'} $${alert.value.toLocaleString()}`,
+          symbol: alert.symbol,
+          price: currentPrice
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Alert checker error:', err);
+  }
+};
+
+// --- Real-time Ticker & Alert Simulation ---
+// In a real app, this would be wired to a high-frequency websocket feed (e.g. Binance)
+// Here, we simulate micro-fluctuations every 3 seconds for a "Pro" feel.
+
+exports.startTickerSimulation = (io) => {
+  setInterval(() => {
+    if (Object.keys(priceCache).length === 0) return;
+    
+    // Select 3 top coins to "flit" prices
+    const activeSymbols = ['BTC', 'ETH', 'SOL'];
+    const microUpdates = {};
+    
+    activeSymbols.forEach(sym => {
+        const basePrice = priceCache[sym];
+        if (basePrice) {
+            // Apply 0.01% - 0.05% fluctuation
+            const change = 1 + (Math.random() - 0.5) * 0.001;
+            microUpdates[sym] = basePrice * change;
+        }
+    });
+
+    if (Object.keys(microUpdates).length > 0) {
+        io.emit('tickerUpdate', microUpdates);
+        checkGlobalAlerts(io);
+    }
+  }, 3000);
+
+  // Sporadic Whale Alerts (simulated every 45-90 seconds)
+  const sendWhaleAlert = () => {
+    const symbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'PEPE'];
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    const amount = (Math.random() * 50 + 10).toFixed(1);
+    const value = (amount * 50000).toLocaleString(); // Rough estimate
+    const alert = {
+        symbol: sym,
+        amount: amount,
+        value: value,
+        from: "Unknown Wallet",
+        to: "Binance",
+        time: new Date().toLocaleTimeString()
+    };
+    io.emit('whaleAlert', alert);
+    
+    // Schedule next
+    setTimeout(sendWhaleAlert, 45000 + Math.random() * 45000);
+  };
+
+  // Liquidation Map Simulation (high frequency)
+  const sendLiquidation = () => {
+    const symbols = ['BTC', 'ETH', 'SOL', 'PEPE', 'WIF'];
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    const sides = ['long', 'short'];
+    const side = sides[Math.floor(Math.random() * sides.length)];
+    const amount = (Math.random() * 200000 + 5000).toFixed(0);
+    
+    io.emit('liquidationUpdate', {
+      symbol: sym,
+      side: side,
+      amount: parseInt(amount),
+      price: priceCache[sym] || 0,
+      timestamp: Date.now()
+    });
+
+    const nextDelay = 3000 + Math.random() * 7000;
+    setTimeout(sendLiquidation, nextDelay);
+  };
+  
+  setTimeout(sendWhaleAlert, 30000);
+  setTimeout(sendLiquidation, 10000);
+};
+
+const NEWS_POOL = [
+  { headline: 'Bitcoin surges past $70K as institutional demand continues to grow', sentiment: 'bullish', coin: 'BTC' },
+  { headline: 'Ethereum Layer-2 TVL hits all-time high of $45 billion', sentiment: 'bullish', coin: 'ETH' },
+  { headline: 'SEC approves three more spot Bitcoin ETF applications from major funds', sentiment: 'bullish', coin: 'BTC' },
+  { headline: 'Solana decentralized exchanges surpass $50B monthly trading volume', sentiment: 'bullish', coin: 'SOL' },
+  { headline: 'PEPE and DOGE lead meme coin rally with 20%+ gains in 24 hours', sentiment: 'bullish', coin: 'PEPE' },
+  { headline: 'Federal Reserve signals potential rate cuts — boosting risk assets', sentiment: 'bullish', coin: 'MACRO' },
+  { headline: 'Ripple wins major legal battle; XRP surges 8% on the news', sentiment: 'bullish', coin: 'XRP' },
+  { headline: 'MicroStrategy increases Bitcoin holdings to 200,000 BTC', sentiment: 'bullish', coin: 'BTC' },
+  { headline: 'Chainlink CCIP mainnet sees explosive DeFi protocol adoption', sentiment: 'bullish', coin: 'LINK' },
+  { headline: 'Binance reports record $120B monthly trading volume for Q1 2025', sentiment: 'bullish', coin: 'BNB' },
+  { headline: 'TON blockchain onboards 200 million Telegram users to Web3', sentiment: 'bullish', coin: 'TON' },
+  { headline: 'Bitcoin mining difficulty hits new ATH as hashrate surges', sentiment: 'neutral', coin: 'BTC' },
+  { headline: 'Altcoin season index hits 78 — all coins outperforming Bitcoin', sentiment: 'bullish', coin: 'ALT' },
+  { headline: 'Ethereum gas fees average 3 gwei in record low congestion period', sentiment: 'bullish', coin: 'ETH' },
+  { headline: 'Avalanche announces $100M DeFi ecosystem grants program', sentiment: 'bullish', coin: 'AVAX' },
+  { headline: 'NFT market sees revival with 42% volume increase week-over-week', sentiment: 'bullish', coin: 'NFT' },
+  { headline: 'Dogecoin whale accumulates $300M position ahead of DOGE ETF news', sentiment: 'bullish', coin: 'DOGE' },
+  { headline: 'Render Network surges 15% on AI compute demand boom', sentiment: 'bullish', coin: 'RNDR' },
+  { headline: 'Galaxy Digital reports $2.1B crypto VC funding in Q1 2025', sentiment: 'bullish', coin: 'VC' },
+];
+
+exports.startNewsSimulation = (io) => {
+  const sendRandomNews = () => {
+    const item = NEWS_POOL[Math.floor(Math.random() * NEWS_POOL.length)];
+    const news = {
+      ...item,
+      time: 'Just now',
+      timestamp: Date.now()
+    };
+    io.emit('newsUpdate', news);
+    
+    // Schedule next news in 15-30 seconds
+    const delay = 15000 + Math.random() * 15000;
+    setTimeout(sendRandomNews, delay);
+  };
+  
+  // Initial delay
+  setTimeout(sendRandomNews, 5000);
 };
 
 exports.getListings = async (req, res) => {

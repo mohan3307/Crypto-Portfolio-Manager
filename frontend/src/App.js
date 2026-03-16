@@ -8,8 +8,10 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AlertsProvider } from './context/AlertsContext';
 import { PaperTradingProvider } from './context/PaperTradingContext';
+import { MarketProvider } from './context/MarketContext';
 import Layout from './components/Layout/Layout';
 import AIChatBot from './components/Charts/AIChatBot';
+import WhaleAlert from './components/Charts/WhaleAlert';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -46,36 +48,39 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AlertsProvider>
-          <PaperTradingProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-                <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-                <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                  <Route index element={<Navigate to="/dashboard" />} />
-                  <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="portfolio" element={<PortfolioPage />} />
-                  <Route path="analytics" element={<AnalyticsPage />} />
-                  <Route path="market" element={<MarketPage />} />
-                  <Route path="compare" element={<ComparePage />} />
-                  <Route path="watchlist" element={<WatchlistPage />} />
-                  <Route path="trending" element={<TrendingPage />} />
-                  <Route path="trading" element={<TradingPage />} />
-                  <Route path="paper" element={<PaperTradingPage />} />
-                  <Route path="alerts" element={<AlertsPage />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                </Route>
-                <Route path="*" element={<Navigate to="/dashboard" />} />
-              </Routes>
-              <AIChatBot />
-            </BrowserRouter>
-            <ToastContainer
-              position="top-right" autoClose={3000}
-              toastStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
-            />
-          </PaperTradingProvider>
-        </AlertsProvider>
+        <MarketProvider>
+          <AlertsProvider>
+            <PaperTradingProvider>
+              <BrowserRouter>
+                <WhaleAlert />
+                <Routes>
+                  <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+                  <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+                  <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                    <Route index element={<Navigate to="/dashboard" />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="portfolio" element={<PortfolioPage />} />
+                    <Route path="analytics" element={<AnalyticsPage />} />
+                    <Route path="market" element={<MarketPage />} />
+                    <Route path="compare" element={<ComparePage />} />
+                    <Route path="watchlist" element={<WatchlistPage />} />
+                    <Route path="trending" element={<TrendingPage />} />
+                    <Route path="trading" element={<TradingPage />} />
+                    <Route path="paper" element={<PaperTradingPage />} />
+                    <Route path="alerts" element={<AlertsPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                  </Route>
+                  <Route path="*" element={<Navigate to="/dashboard" />} />
+                </Routes>
+                <AIChatBot />
+              </BrowserRouter>
+              <ToastContainer
+                position="top-right" autoClose={3000}
+                toastStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
+              />
+            </PaperTradingProvider>
+          </AlertsProvider>
+        </MarketProvider>
       </AuthProvider>
     </ThemeProvider>
   );

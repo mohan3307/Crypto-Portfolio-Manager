@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useMarket } from '../../context/MarketContext';
 
 const fmt = (n, d = 2) => {
   if (!n) return '—';
@@ -117,22 +117,46 @@ function DepthChart({ asks, bids, midPrice }) {
   return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />;
 }
 
-export default function OrderBook({ midPrice = 45000 }) {
+export default function OrderBook({ symbol = 'BTC', midPrice = 45000 }) {
+  const { tickerUpdates } = useMarket();
   const [book, setBook] = useState(() => generateBook(midPrice));
   const [trades, setTrades] = useState(() => generateTrades(midPrice));
   const [tab, setTab] = useState('book');   // book | trades | depth
   const [flash, setFlash] = useState({});
   const prevBookRef = useRef({});
 
-  // Simulate live updates
+  // React to live ticker updates from MarketContext
   useEffect(() => {
+    const livePrice = tickerUpdates[symbol];
+    if (livePrice) {
+      setBook(generateBook(livePrice));
+      
+      // Add new simulated trade based on live price
+      const isBuy = Math.random() > 0.48;
+      const newTrade = {
+        time: Date.now(),
+        price: livePrice * (1 + (Math.random() - 0.5) * 0.0005),
+        size: Math.pow(Math.random(), 2) * 2 + 0.01,
+        side: isBuy ? 'buy' : 'sell',
+      };
+      setTrades(prev => [newTrade, ...prev].slice(0, 40));
+
+      const flashId = Date.now();
+      setFlash({ id: flashId, side: isBuy ? 'buy' : 'sell' });
+      setTimeout(() => setFlash(f => f.id === flashId ? {} : f), 400);
+    }
+  }, [tickerUpdates[symbol], symbol]);
+
+  // Fallback simulation for other coins without live tickers
+  useEffect(() => {
+    if (tickerUpdates[symbol]) return; // Stop local simulation if live data exists
+    
     const iv = setInterval(() => {
       const drift = midPrice * (Math.random() - 0.499) * 0.001;
       const newMid = (prevBookRef.current.mid || midPrice) + drift;
       prevBookRef.current.mid = newMid;
       setBook(generateBook(newMid));
 
-      // Add new trade
       const isBuy = Math.random() > 0.48;
       const newTrade = {
         time: Date.now(),
@@ -142,13 +166,12 @@ export default function OrderBook({ midPrice = 45000 }) {
       };
       setTrades(prev => [newTrade, ...prev].slice(0, 40));
 
-      // Flash
       const flashId = Date.now();
       setFlash({ id: flashId, side: isBuy ? 'buy' : 'sell' });
       setTimeout(() => setFlash(f => f.id === flashId ? {} : f), 400);
-    }, 1200);
+    }, 1500);
     return () => clearInterval(iv);
-  }, [midPrice]);
+  }, [midPrice, symbol, tickerUpdates[symbol]]);
 
   const { asks, bids, spread } = book;
   const spreadPct = midPrice ? ((spread / 2) / midPrice * 100 * 2).toFixed(3) : '—';
