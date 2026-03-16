@@ -6,7 +6,6 @@ import { getPortfolio, getTrending, getChartData } from '../services/api';
 import { useMarket } from '../context/MarketContext';
 import { formatCurrency, formatPercent, getChangeClass } from '../utils/format';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
-import MarketHeatmap from '../components/Charts/MarketHeatmap';
 import FearGreedGauge from '../components/Charts/FearGreedGauge';
 import NewsFeed from '../components/Charts/NewsFeed';
 
@@ -128,11 +127,6 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-      </div>
-
-      {/* ── Market Heatmap ──────────────────────────────────────────────── */}
-      <div className="card" style={{ marginBottom:'24px' }}>
-        <MarketHeatmap listings={listings} onCoinSelect={coin => navigate('/trading')} />
       </div>
 
       {/* ── Fear & Greed + Market Dominance + AI Panel ──────────────────── */}
