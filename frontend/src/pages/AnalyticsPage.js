@@ -189,7 +189,7 @@ export default function AnalyticsPage() {
                  fontSize: 9,
                  fontWeight: 900,
                  letterSpacing: 2,
-                 cursor: pointer
+                 cursor: 'pointer'
                }}>{t}</button>
           ))}
         </div>

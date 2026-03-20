@@ -103,9 +103,20 @@ export default function RegisterPage() {
       </div>
 
       <style>{`
-        .v4-auth-container { min-height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 40px 20px; }
+        .v4-auth-container { min-height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); position: relative; overflow: hidden; padding: 40px 20px; }
         
-        .v4-auth-card { width: 100%; maxWidth: 480px; background: #000; padding: 60px 48px; border: 2px solid var(--border); position: relative; z-index: 10; }
+        .v4-neural-bg { position: absolute; inset: 0; z-index: 1; overflow: hidden; opacity: 0.6; pointer-events: none; }
+        .v4-aura { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; animation: v4-aura-drift 15s infinite alternate; }
+        .a1 { width: 600px; height: 600px; background: radial-gradient(circle, #3b82f6 0%, transparent 70%); top: -100px; left: -100px; }
+        .a2 { width: 500px; height: 500px; background: radial-gradient(circle, #8b5cf6 0%, transparent 70%); bottom: -50px; right: -50px; animation-duration: 20s; }
+        .a3 { width: 400px; height: 400px; background: radial-gradient(circle, #10b981 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-duration: 25s; }
+
+        @keyframes v4-aura-drift {
+          from { transform: translate(0, 0) scale(1); }
+          to { transform: translate(5%, 5%) scale(1.1); }
+        }
+
+        .v4-auth-card { width: 100%; maxWidth: 480px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 60px 48px; border: 2px solid var(--border); position: relative; z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         
         .v4-auth-header { text-align: center; margin-bottom: 48px; }
         
