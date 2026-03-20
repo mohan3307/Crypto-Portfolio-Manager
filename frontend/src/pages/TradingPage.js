@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import ProTradingChart from '../components/Charts/ProTradingChart';
 import ExecutionBlade from '../components/Tools/ExecutionBlade';
 import NewsFeed from '../components/Charts/NewsFeed';
-import AIPredictionPanel from '../components/Dashboard/AIPredictionPanel';
-import OrderBook from '../components/Dashboard/OrderBook';
-import TickerTape from '../components/Dashboard/TickerTape';
+import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
+import OrderBook from '../components/Charts/OrderBook';
+import TickerTape from '../components/Charts/TickerTape';
 import { getListings, getChartData } from '../services/api';
 import { formatCurrency, formatPercent } from '../utils/format';
 
