@@ -5,10 +5,10 @@ export default function StrategyBacktester() {
   const [strategy, setStrategy] = useState('DCA');
   
   const strategies = {
-    'DCA': { roi: 12.4, risk: 'LOW_FACTOR', color: 'var(--blue)' },
-    'GRID': { roi: 24.8, risk: 'MEDIUM_EXPOSURE', color: 'var(--green)' },
-    'MEAN': { roi: -8.2, risk: 'HIGH_VARIANCE', color: 'var(--red)' },
-    'QUAN': { roi: 42.1, risk: 'EXTREME_ALPHA', color: 'var(--gold)' }
+    'DCA': { roi: 12.4, risk: 'LOW_FACTOR', color: '#3b82f6' },
+    'GRID': { roi: 24.8, risk: 'MEDIUM_EXPOSURE', color: '#10b981' },
+    'MEAN': { roi: -8.2, risk: 'HIGH_VARIANCE', color: '#ff3355' },
+    'QUAN': { roi: 42.1, risk: 'EXTREME_ALPHA', color: '#ffaa00' }
   };
 
   const chartData = {
@@ -22,12 +22,15 @@ export default function StrategyBacktester() {
       tension: 0.4,
       fill: true,
       backgroundColor: (context) => {
-        const bg = strategies[strategy].color;
+        const color = strategies[strategy].color;
         if (!context.chart.chartArea) return;
         const { ctx, chartArea } = context.chart;
         const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-        gradient.addColorStop(0, bg.replace(')', ', 0.15)'));
-        gradient.addColorStop(1, 'transparent');
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.15)`);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
         return gradient;
       }
     }]
