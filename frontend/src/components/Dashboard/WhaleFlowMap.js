@@ -11,40 +11,71 @@ export default function WhaleFlowMap() {
     return () => socket.off('whaleFlowUpdate');
   }, [socket]);
 
-  if (!flows) return <div className="card glass" style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#4a5e78' }}>TRACKING WHALE FLOWS...</div>;
+  if (!flows) return (
+    <div className="v4-wf-shell v4-wf-idle">
+      <div className="v4-scan-indicator">
+        <div className="v4-scan-ring" />
+        <div style={{ fontSize: 9, color: '#4a5e78', fontWeight: 950, letterSpacing: 2, marginTop: 20 }}>WHALE_TELEMETRY_INITIALIZING...</div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="card glass-heavy" style={{ padding: '16px' }}>
-      <div style={{ fontSize: 11, fontWeight: 800, color: '#eef2fa', mb: 15, textTransform: 'uppercase', letterSpacing: 0.5 }}>Net Exchange Flows (Cap Hub)</div>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, mt: 10 }}>
+    <div className="v4-wf-shell">
+      <div className="v4-wf-header">
+        <div>
+          <div style={{ fontSize: 9, color: '#3b82f6', fontWeight: 950, letterSpacing: 2, marginBottom: 4 }}>ON_CHAIN_INTELLIGENCE</div>
+          <div style={{ fontSize: 13, fontWeight: 950, color: '#fff' }}>WHALE_FLOW_MATRIX</div>
+        </div>
+        <div className="v4-wf-live">⬡ TRACKING</div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '0 20px 20px' }}>
         {Object.entries(flows).map(([sym, data]) => {
           const net = data.inflow - data.outflow;
-          const isPositive = net >= 0;
+          const isPos = net >= 0;
+          const barPct = Math.min(50, Math.abs(net) / 10);
+          const color = isPos ? '#10b981' : '#ff4d4d';
+
           return (
-            <div key={sym} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: 10 }}>
-              <div style={{ width: 35, fontSize: 11, fontWeight: 800, color: '#fff' }}>{sym}</div>
-              <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, position: 'relative' }}>
-                <div style={{ 
-                  position: 'absolute', 
-                  left: isPositive ? '50%' : `calc(50% - ${Math.min(Math.abs(net) / 10, 50)}%)`,
-                  width: `${Math.min(Math.abs(net) / 10, 50)}%`,
+            <div key={sym} className="v4-wf-row">
+              <div style={{ width: 40, fontSize: 11, fontWeight: 950, color: '#fff', flexShrink: 0 }}>{sym}</div>
+              <div style={{ flex: 1, position: 'relative', height: 6, background: 'rgba(255,255,255,0.03)', borderRadius: 3 }}>
+                {/* Midpoint line */}
+                <div style={{ position: 'absolute', left: '50%', top: -3, width: 1, height: 12, background: 'rgba(255,255,255,0.08)' }} />
+                <div style={{
+                  position: 'absolute',
+                  left: isPos ? '50%' : `calc(50% - ${barPct}%)`,
+                  width: `${barPct}%`,
                   height: '100%',
-                  background: isPositive ? 'var(--green)' : 'var(--red)',
-                  borderRadius: 2
+                  background: color,
+                  borderRadius: 3,
+                  boxShadow: `0 0 8px ${color}60`
                 }} />
               </div>
-              <div style={{ width: 60, textAlign: 'right', fontSize: 10, fontWeight: 700, color: isPositive ? 'var(--green)' : 'var(--red)' }}>
-                {isPositive ? '+' : ''}{net.toFixed(1)}M
+              <div style={{ width: 60, textAlign: 'right', fontSize: 10, fontWeight: 950, color, fontFamily: 'Space Mono', flexShrink: 0 }}>
+                {isPos ? '+' : ''}{net.toFixed(1)}M
               </div>
             </div>
           );
         })}
       </div>
 
-      <div style={{ mt: 15, fontSize: 8, color: '#4a5e78', textAlign: 'center' }}>
-        Positive values indicate asset accumulation on exchanges.
+      <div style={{ padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.03)', fontSize: 8, color: '#4a5e78', fontWeight: 950, letterSpacing: 0.5 }}>
+        POSITIVE_FLOW: ACCUMULATION_ON_CHAIN ↑ // NEGATIVE_FLOW: DISTRIBUTION_SIGNAL ↓
       </div>
+
+      <style>{`
+        .v4-wf-shell { background: rgba(7, 11, 20, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; }
+        .v4-wf-idle { height: 200px; align-items: center; justify-content: center; }
+        .v4-wf-header { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .v4-wf-live { font-size: 9px; font-weight: 950; color: #10b981; padding: 4px 12px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 20px; }
+        .v4-wf-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: rgba(255,255,255,0.01); border-radius: 12px; transition: 0.2s; }
+        .v4-wf-row:hover { background: rgba(59, 130, 246, 0.05); }
+        .v4-scan-indicator { display: flex; flex-direction: column; align-items: center; }
+        .v4-scan-ring { width: 40px; height: 40px; border: 3px solid rgba(59, 130, 246, 0.3); border-top-color: #3b82f6; border-radius: 50%; animation: v4-spin 1.5s linear infinite; }
+        @keyframes v4-spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

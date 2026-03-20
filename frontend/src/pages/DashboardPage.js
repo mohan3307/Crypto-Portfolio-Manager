@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js';
 import { Doughnut, Line } from 'react-chartjs-2';
 import { getPortfolio, getTrending, getChartData } from '../services/api';
 import { useMarket } from '../context/MarketContext';
-import { formatCurrency, formatPercent, getChangeClass } from '../utils/format';
-import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
+import { formatCurrency, formatPercent } from '../utils/format';
 import FearGreedGauge from '../components/Charts/FearGreedGauge';
-import NewsFeed from '../components/Charts/NewsFeed';
-import MarketPulse from '../components/Dashboard/MarketPulse';
 import OnChainFeed from '../components/Dashboard/OnChainFeed';
 import AITrendScanner from '../components/Tools/AITrendScanner';
 import RiskCalculator from '../components/Tools/RiskCalculator';
 import EconomicCalendar from '../components/Tools/EconomicCalendar';
-import SystemTelemetry from '../components/Dashboard/SystemTelemetry';
-import SessionTracker from '../components/Dashboard/SessionTracker';
 import SentimentGauge from '../components/Charts/SentimentGauge';
 import PredictiveGlance from '../components/Dashboard/PredictiveGlance';
 import OrderBookDepth from '../components/Dashboard/OrderBookDepth';
@@ -28,18 +23,32 @@ import SectorDecomposition from '../components/Dashboard/SectorDecomposition';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
-const COLORS = ['#3b82f6', '#00d4aa', '#f59e0b', '#8b5cf6', '#ff4757', '#06b6d4', '#10b981'];
+const COLORS = ['#fff', '#888', '#444', '#aaa', '#666', '#eee', '#222'];
+
+const donutOptions = {
+  responsive: true, maintainAspectRatio: false, cutout: '85%',
+  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#000', borderColor: '#fff', borderWidth: 1, titleFont: { size: 10, family: 'var(--font-mono)' }, bodyFont: { size: 11, family: 'var(--font-mono)' }, padding: 12 } }
+};
+
+function StatCard({ label, val, sub, cls }) {
+  const accent = cls === 'red' ? 'var(--red)' : cls === 'green' ? 'var(--green)' : '#fff';
+  return (
+    <div className="card" style={{ padding: '20px', background: '#000', border: '2px solid var(--border)' }}>
+      <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2, marginBottom: 12 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)', letterSpacing: -1 }}>{val}</div>
+      <div style={{ fontSize: 9, color: accent, fontWeight: 900, marginTop: 8, letterSpacing: 1, fontFamily: 'var(--font-mono)' }}>{sub}</div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
-  const { socket, listings } = useMarket();
+  const { listings } = useMarket();
   const [portfolio, setPortfolio] = useState(null);
   const [trending, setTrending] = useState([]);
   const [showCommand, setShowCommand] = useState(false);
-  const [workspace, setWorkspace] = useState('TACTICAL'); // TACTICAL or ANALYTICS
-  const [alphaSignal, setAlphaSignal] = useState(null);
-  const [btcChart, setBtcChart] = useState([]);
-  const [btcPrices, setBtcPrices] = useState([]);
+  const [workspace, setWorkspace] = useState('TACTICAL');
   const [loading, setLoading] = useState(true);
+  const [btcChart, setBtcChart] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,30 +57,16 @@ export default function DashboardPage() {
         const [p, t, c] = await Promise.all([getPortfolio(), getTrending(), getChartData('BTC', '7d')]);
         setPortfolio(p.data);
         setTrending(t.data);
-        const pts = c.data.data;
-        setBtcChart(pts);
-        setBtcPrices(pts.map(d => d.price));
+        setBtcChart(c.data.data);
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     };
     fetchAll();
   }, []);
 
-  useEffect(() => {
-    const handleKey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setShowCommand(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
-
   if (loading) return (
-    <div className="loading-spinner">
-      <div className="spinner"></div>
-      <p style={{ color: 'var(--text-muted)' }}>Initializing terminal...</p>
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 40, height: 40, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'v4-spin 1s linear infinite' }} />
     </div>
   );
 
@@ -80,221 +75,184 @@ export default function DashboardPage() {
 
   const allocationData = {
     labels: sortedItems.slice(0, 7).map(i => i.symbol),
-    datasets: [{ data: sortedItems.slice(0, 7).map(i => i.currentValue), backgroundColor: COLORS, borderWidth: 0, hoverOffset: 8 }]
+    datasets: [{ data: sortedItems.slice(0, 7).map(i => i.currentValue), backgroundColor: COLORS, borderWidth: 0, hoverOffset: 15 }]
   };
 
   const lineData = {
     labels: btcChart.map((d, i) => i % 12 === 0 ? new Date(d.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''),
-    datasets: [{ label: 'BTC Price', data: btcChart.map(d => d.price), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.05)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }]
+    datasets: [{ 
+      label: 'BTC_VECTOR', 
+      data: btcChart.map(d => d.price), 
+      borderColor: '#fff', 
+      backgroundColor: 'transparent', 
+      fill: false, 
+      tension: 0, 
+      pointRadius: 0, 
+      borderWidth: 2 
+    }]
   };
-
-  const chartOptions = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-    scales: {
-      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5e78', maxTicksLimit: 6 } },
-      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#4a5e78', callback: v => '$' + v.toLocaleString() } }
-    }
-  };
-
-  const donutOptions = {
-    responsive: true, maintainAspectRatio: false, cutout: '75%',
-    plugins: { legend: { position: 'right', labels: { color: '#8899b4', font: { size: 11 }, usePointStyle: true, padding: 20 } } }
-  };
-
-  const topCoin = [...items].sort((a, b) => b.profitPct - a.profitPct)[0];
-  const totalMCap = listings?.reduce((s, c) => s + (c.marketCap || 0), 0) || 1;
-  const btcDom = ((listings?.find(c => c.symbol === 'BTC')?.marketCap || 0) / totalMCap * 100);
-  const ethDom = ((listings?.find(c => c.symbol === 'ETH')?.marketCap || 0) / totalMCap * 100);
-  const altDom = Math.max(0, 100 - btcDom - ethDom);
 
   return (
-    <div style={{ maxWidth: 1600, margin: '0 auto', padding: '0 10px', position: 'relative' }}>
-      {/* ── Command Bar (Floating) ─────────────────────────────────── */}
-      {showCommand && (
-        <div style={{ position: 'fixed', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 500, background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(16px)', borderRadius: 12, border: '1px solid var(--accent)', boxShadow: '0 20px 50px rgba(0,0,0,0.8)', zIndex: 9999, padding: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid rgba(255,255,255,0.05)', pb: 15, mb: 15 }}>
-            <span style={{ fontSize: 18 }}>⚡</span>
-            <input autoFocus placeholder="Execute Terminal Command... (e.g., 'nav exchange', 'buy btc', 'calc risk')" style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#fff', fontSize: 14 }} onBlur={() => setShowCommand(false)} />
-          </div>
-          <div style={{ fontSize: 10, color: '#4a5e78', textTransform: 'uppercase', letterSpacing: 1, mb: 10 }}>QUICK LINKS</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {['Dashboard', 'Exchange', 'Alerts', 'Strategy Hub'].map(link => (
-              <div key={link} style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 6, fontSize: 12, color: '#eef2fa', cursor: 'pointer' }} onMouseEnter={e => e.target.style.background = 'rgba(59,130,246,0.1)'} onMouseLeave={e => e.target.style.background = 'rgba(255,255,255,0.02)'}>
-                Jump to {link}
-              </div>
-            ))}
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      
+      <header className="v4-dashboard-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ width: 40, height: 40, background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900 }}>CMD</div>
+          <div>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>TACTICAL_COMMAND_CENTRAL</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <div style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: '50%' }} />
+              <div style={{ fontSize: 9, color: 'var(--green)', fontWeight: 900, letterSpacing: 2 }}>NEURAL_ENGINE_ACTIVE_v4.2</div>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* ── Header Telemetry ────────────────────────────────────────── */}
-      <SystemTelemetry />
-      <MarketPulse />
-
-      {/* ── Workspace Switcher & Alpha Signal ────────────────────────── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 20 }}>
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.03)', padding: 4, borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ display: 'flex', gap: 12 }}>
           {['TACTICAL', 'ANALYTICS'].map(mode => (
-            <div key={mode} onClick={() => setWorkspace(mode)} style={{ 
-              padding: '8px 20px', fontSize: 11, fontWeight: 800, cursor: 'pointer', borderRadius: 8,
-              background: workspace === mode ? 'var(--blue)' : 'transparent',
-              color: workspace === mode ? '#fff' : '#4a5e78',
-              transition: 'all 0.2s ease'
-            }}>
-              {mode} MODE
-            </div>
+            <button key={mode} onClick={() => setWorkspace(mode)} className={`v4-mode-btn ${workspace === mode ? 'active' : ''}`}>{mode}_SURVEILLANCE</button>
           ))}
         </div>
+      </header>
 
-        {alphaSignal && (
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 15, padding: '10px 20px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.1)', borderRadius: 10 }}>
-            <span style={{ fontSize: 10, fontWeight: 900, color: 'var(--blue)' }}>QUANT ALPHA FEED</span>
-            <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.1)' }} />
-            <span style={{ fontSize: 11, color: '#eef2fa' }}>[{alphaSignal.type}] <span style={{ fontWeight: 800 }}>{alphaSignal.asset}:</span> {alphaSignal.signal}</span>
-            <span style={{ marginLeft: 'auto', fontSize: 9, color: 'var(--green)', fontWeight: 700 }}>C: {(alphaSignal.quality * 100).toFixed(0)}%</span>
-          </div>
-        )}
-      </div>
-
-      {/* ── The Multi-Pane Trading Console ────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 24, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 40, marginBottom: 40 }}>
         
-        {/* CENTER COLUMN: Analysis & Execution */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Main Feed */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
           
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+            <StatCard label="TACTICAL_EQUITY" val={formatCurrency(summary.totalValue)} sub={`${formatPercent(summary.totalPnLPct)} 24H_CHG`} cls="blue" />
+            <StatCard label="ALLOCATED_POOL" val={formatCurrency(summary.totalInvested)} sub={`${items.length} ACTIVE_NODES`} cls="green" />
+            <StatCard label="GROSS_DIFF" val={formatCurrency(summary.totalPnL)} sub="REALTIME_SYNC" cls={summary.totalPnL >= 0 ? 'green' : 'red'} />
+            <StatCard label="NEURAL_SCAN" val="12.4%_CONF" sub="BULLISH_BIAS" cls="gold" />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
+            <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                  <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2 }}>BENCHMARK_TELEMETRY // BTC_7D</div>
+                  <div style={{ fontSize: 9, color: '#fff', fontWeight: 900 }}>LIVE_FEED</div>
+               </div>
+               <div style={{ height: 280 }}>
+                 <Line data={lineData} options={{ 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                      x: { grid: { display: false }, ticks: { color: 'var(--text-dim)', font: { size: 9, family: 'var(--font-mono)' } } },
+                      y: { grid: { color: 'rgba(255,255,255,0.05)', borderDash: [2, 2] }, ticks: { color: 'var(--text-dim)', font: { size: 9, family: 'var(--font-mono)' } } }
+                    }
+                 }} />
+               </div>
+            </div>
+            <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
+               <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 20 }}>ORDER_BOOK_DENSITY</div>
+               <OrderBookDepth />
+            </div>
+          </div>
+
           {workspace === 'TACTICAL' ? (
-            <>
-              {/* Row 1: Vital Metrics (Elite Glazed Tiles) */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-                 {[
-                   { label: 'NET EQUITY', val: formatCurrency(summary.totalValue), change: formatPercent(summary.totalPnLPct), cls: 'blue' },
-                   { label: 'INVESTED', val: formatCurrency(summary.totalInvested), change: `${items.length} POS`, cls: 'green' },
-                   { label: 'TOTAL PNL', val: (summary.totalPnL >= 0 ? '+' : '') + formatCurrency(summary.totalPnL), change: formatPercent(summary.totalPnLPct), cls: summary.totalPnL >= 0 ? 'green' : 'red' },
-                   { label: 'TRADING VOL', val: '$420.5k', change: '+12.4%', cls: 'gold' }
-                 ].map((stat, i) => (
-                    <div key={i} className={`stat-card ${stat.cls} glass-heavy`} style={{ padding: '16px 20px' }}>
-                      <div className="stat-label" style={{ fontSize: 9 }}>{stat.label}</div>
-                      <div className="stat-value" style={{ fontSize: 18, margin: '4px 0' }}>{stat.val}</div>
-                      <div className={`stat-change ${getChangeClass(stat.change)}`}>{stat.change}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24 }}>
+                  <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                       <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2 }}>NEURAL_VECTOR_SCANNER</div>
+                       <div style={{ fontSize: 8, padding: '2px 6px', border: '1px solid #fff', color: '#fff' }}>OPTIMIZED</div>
                     </div>
-                 ))}
-              </div>
-
-              {/* Row 2: Charts & Depth Diagnostics */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20 }}>
-                <div className="card glass" style={{ padding: 0 }}>
-                  <div className="card-header" style={{ padding: '12px 20px' }}>
-                    <span className="card-title">BENCHMARK (BTC/USDT)</span>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                       <span className="badge badge-blue">WSS</span>
-                       <span className="badge badge-green">LIVE</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      {[
+                        { type: 'SIGNAL', msg: 'BTC/USDT: Bullish Momentum detected on 4H TF', val: '88%_CONF' },
+                        { type: 'WHALE', msg: '2,500 BTC ($185M) inflow from unknown cluster', val: 'CRITICAL' },
+                        { type: 'ALPHA', msg: 'Institutional RSI divergence identified on ETH/BTC', val: 'DETECTED' }
+                      ].map((evt, i) => (
+                        <div key={i} className="v4-event-row" style={{ border: 'none', background: '#080808', borderBottom: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 13, color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{evt.msg}</span>
+                          <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-dim)', fontWeight: 900 }}>{evt.val}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div style={{ height: 320, padding: 20 }}><Line data={lineData} options={chartOptions} /></div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  <OrderBookDepth />
-                  <div className="card glass-heavy" style={{ padding: '16px', height: 120, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                     <div style={{ fontSize: 10, color: '#4a5e78', mb: 10, fontWeight: 700 }}>EXECUTION BLADE</div>
-                     <div style={{ display: 'flex', gap: 8, mt: 'auto' }}>
-                        <button className="btn btn-primary" style={{ flex: 1, fontSize: 11, padding: 10, background: 'var(--green)' }}>MARKET BUY</button>
-                        <button className="btn btn-primary" style={{ flex: 1, fontSize: 11, padding: 10, background: 'var(--red)' }}>MARKET SELL</button>
-                     </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                     <PredictiveGlance />
+                     <SentimentGauge />
                   </div>
-                </div>
-              </div>
-
-              {/* Row 3: Tactical & Flows Hub */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: 20 }}>
-                <WhaleFlowMap />
-                <StrategyBacktester />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                   <PredictiveGlance />
-                   <SentimentGauge />
-                </div>
-              </div>
-            </>
+               </div>
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+                  <WhaleFlowMap />
+                  <StrategyBacktester />
+                  <EconomicCalendar />
+               </div>
+            </div>
           ) : (
-            <>
-              {/* ANALYTICS MODE: Macro & Correlation Views */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 350px', gap: 20 }}>
-                <NeuralForecastingHub />
-                <MacroBarometer />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20 }}>
-                 <CorrelationMatrix />
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                   <SectorDecomposition />
-                   <RiskTelemetry />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
+                  <NeuralForecastingHub />
+                  <MacroBarometer />
+               </div>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                  <CorrelationMatrix />
+                  <SectorDecomposition />
+               </div>
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            <RiskTelemetry />
+            <AITrendScanner />
+            <RiskCalculator />
+          </div>
+        </div>
+
+        {/* Tactical Side Panels */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+           <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
+              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, textAlign: 'center', marginBottom: 24 }}>LIQUIDITY_ALLOCATION</div>
+              <div style={{ height: 240, position: 'relative' }}>
+                 <Doughnut data={allocationData} options={donutOptions} />
+                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>ACTIVE_NODES</div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{items.length}</div>
                  </div>
               </div>
-            </>
-          )}
+           </div>
 
-          {/* Row 4: Adaptive Intelligence Strip */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr 1fr', gap: 20 }}>
-            {workspace === 'TACTICAL' ? <RiskTelemetry /> : <StrategyBacktester />}
-            <AITrendScanner />
-            <EconomicCalendar />
-          </div>
+           <OnChainFeed />
 
-          {/* Row 5: Utility Row */}
-          {workspace === 'TACTICAL' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
-              <RiskCalculator />
-              <SessionTracker />
-              <div className="card glass" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#4a5e78' }}>
-                 TERMINAL STATUS: NOMINAL
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT COLUMN: Command Feed & Allocation */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <div className="card glass" style={{ padding: 0 }}>
-             <div className="card-header" style={{ padding: '12px 20px' }}><span className="card-title">ALLOCATION DENSITY</span></div>
-             <div style={{ height: 250, padding: 20 }}>
-                {items.length > 0 ? <Doughnut data={allocationData} options={donutOptions} /> : <div className="empty-state"><p>HOLDINGS EMPTY</p></div>}
-             </div>
-          </div>
-
-          <div style={{ height: 450 }}><OnChainFeed /></div>
-          
-          <div className="card glass-heavy" style={{ flex: 1, padding: 0 }}>
-            <div className="card-header" style={{ padding: '12px 20px' }}><span className="card-title">ALPHA LEADERS</span></div>
-            <div style={{ padding: '0 16px 16px' }}>
-              {trending?.topGainers?.slice(0, 8).map((coin, i) => (
-                <div key={i} style={{ padding: '10px 0', display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                    <img src={coin.logo} width={18} height={18} alt="" />
-                    <span style={{ fontSize: 11, fontWeight: 700 }}>{coin.symbol}</span>
+           <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
+              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 20 }}>TOP_ALPHA_GAINERS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {trending?.topGainers?.slice(0, 6).map((c, i) => (
+                  <div key={i} className="v4-trending-row" style={{ background: '#080808', border: 'none', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                       <img src={c.logo} width={18} height={18} alt="" style={{ borderRadius: '2px', background: '#fff' }} />
+                       <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{c.symbol}</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 900, fontFamily: 'var(--font-mono)' }}>+{c.change24h.toFixed(2)}%</span>
                   </div>
-                  <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700 }}>{formatPercent(coin.change24h)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+           </div>
 
-          <FearGreedGauge />
-        </div>
-      </div>
-
-      {/* ── Global Market News ────────────────────────────────────────── */}
-      <div className="card glass-heavy">
-        <div className="card-header"><span className="card-title">INTER-MARKET HUB FEED</span></div>
-        <div style={{ padding: '0 20px 20px' }}>
-          <NewsFeed />
+           <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)', textAlign: 'center' }}>
+              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 20 }}>FEAR_GREED_SURVEILLANCE</div>
+              <FearGreedGauge />
+           </div>
         </div>
       </div>
 
       <style>{`
-        .glass { background: rgba(255, 255, 255, 0.02) !important; backdrop-filter: blur(12px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.05) !important; }
-        .glass-heavy { background: rgba(255, 255, 255, 0.03) !important; backdrop-filter: blur(20px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.08) !important; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .stat-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .stat-card:hover { transform: translateY(-5px) scale(1.02); border-color: rgba(255, 255, 255, 0.15) !important; }
-        .card-title { font-family: 'Inter', sans-serif; letter-spacing: 0.5px; font-weight: 800; font-size: 11px; color: #8899b4; text-transform: uppercase; }
+        .v4-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding: 24px 0; border-bottom: 2px solid var(--border); }
+        .v4-header-icon-box { width: 44px; height: 44px; background: #fff; color: #000; border-radius: 2px; display: flex; alignItems: center; justifyContent: center; fontSize: 18px; font-weight: 900; }
+        
+        .v4-mode-btn { background: #070707; border: 2px solid var(--border); color: var(--text-dim); padding: 10px 20px; font-size: 9px; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.1s; }
+        .v4-mode-btn.active { background: #fff; color: #000; border-color: #fff; }
+
+        .v4-event-row { padding: 14px 18px; background: #050505; border: 1px solid var(--border); display: flex; justifyContent: space-between; alignItems: center; transition: 0.1s; }
+        .v4-event-row:hover { border-color: var(--text-muted); transform: translateX(4px); }
+
+        .v4-trending-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #050505; border: 1px solid var(--border); transition: 0.1s; }
+        .v4-trending-row:hover { border-color: var(--text-muted); }
+
+        .v4-tag { font-size: 8px; fontWeight: 900; letterSpacing: 1px; padding: 3px 6px; border-radius: 2px; }
+        .v4-tag.blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue); }
       `}</style>
     </div>
   );

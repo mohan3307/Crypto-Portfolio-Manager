@@ -11,46 +11,57 @@ const MATRIX_DATA = [
 
 export default function CorrelationMatrix() {
   const getColor = (val) => {
-    if (val === 1) return 'rgba(59, 130, 246, 0.2)';
-    if (val > 0.8) return 'rgba(16, 185, 129, 0.3)';
-    if (val > 0.6) return 'rgba(16, 185, 129, 0.15)';
-    return 'rgba(255, 255, 255, 0.03)';
+    if (val === 1) return 'rgba(59, 130, 246, 0.15)';
+    if (val > 0.8) return 'rgba(16, 185, 129, 0.25)';
+    if (val > 0.6) return 'rgba(16, 185, 129, 0.12)';
+    return 'rgba(255, 255, 255, 0.02)';
   };
 
   return (
-    <div className="card glass-heavy" style={{ padding: '16px', height: '100%' }}>
-      <div style={{ fontSize: 11, fontWeight: 800, color: '#eef2fa', mb: 15, textTransform: 'uppercase', letterSpacing: 0.5 }}>Asset Correlation (24H)</div>
+    <div className="glass-heavy correlation-matrix-panel" style={{ padding: '24px', borderRadius: 24, height: '100%', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 25 }}>
+        <div style={{ fontSize: 20 }}>📊</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: -0.2 }}>ASSET_CORRELATION</div>
+          <div style={{ fontSize: 9, color: '#4a5e78', fontWeight: 900 }}>24H NEURAL SYNCHRONICITY</div>
+        </div>
+      </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: `40px repeat(${ASSETS.length}, 1fr)`, gap: 4, mt: 10 }}>
-        {/* Header Spacer */}
+      <div style={{ display: 'grid', gridTemplateColumns: `40px repeat(${ASSETS.length}, 1fr)`, gap: 6 }}>
         <div />
         {ASSETS.map(a => (
-          <div key={a} style={{ fontSize: 9, fontWeight: 700, textAlign: 'center', color: '#4a5e78' }}>{a}</div>
+          <div key={a} style={{ fontSize: 9, fontWeight: 900, textAlign: 'center', color: '#4a5e78', fontFamily: 'Space Mono' }}>{a}</div>
         ))}
 
         {ASSETS.map((row, i) => (
           <React.Fragment key={row}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: '#4a5e78', display: 'flex', alignItems: 'center' }}>{row}</div>
+            <div style={{ fontSize: 9, fontWeight: 900, color: '#4a5e78', fontFamily: 'Space Mono', display: 'flex', alignItems: 'center' }}>{row}</div>
             {MATRIX_DATA[i].map((val, j) => (
-              <div key={`${i}-${j}`} style={{ 
-                height: 35, 
+              <div key={`${i}-${j}`} className="heat-cell" style={{ 
+                height: 42, 
                 background: getColor(val), 
-                borderRadius: 4, 
+                borderRadius: 8, 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                border: '1px solid rgba(255,255,255,0.03)'
+                border: '1px solid rgba(255,255,255,0.03)',
+                transition: '0.3s'
               }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: val > 0.8 ? '#fff' : '#8899b4' }}>{val.toFixed(2)}</span>
+                <span style={{ fontSize: 10, fontWeight: 900, color: val > 0.8 ? '#fff' : '#4a5e78', fontFamily: 'Space Mono' }}>{val.toFixed(2)}</span>
               </div>
             ))}
           </React.Fragment>
         ))}
       </div>
 
-      <div style={{ mt: 15, fontSize: 8, color: '#4a5e78', textAlign: 'center' }}>
-        Higher values indicate assets moving in sync.
+      <div style={{ marginTop: 25, fontSize: 8, color: '#4a5e78', textAlign: 'center', fontWeight: 900, letterSpacing: 0.5 }}>
+        COEFFICIENTS NEAR 1.00 INDICATE TOTAL MARKET CONVERGENCE.
       </div>
+
+      <style>{`
+        .correlation-matrix-panel { background: rgba(10, 15, 28, 0.7) !important; backdrop-filter: blur(25px) saturate(210%); }
+        .heat-cell:hover { transform: scale(1.05); z-index: 10; border-color: rgba(59, 130, 246, 0.3) !important; box-shadow: 0 0 20px rgba(0,0,0,0.4); }
+      `}</style>
     </div>
   );
 }

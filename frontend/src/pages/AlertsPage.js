@@ -1,4 +1,8 @@
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 import { useMarket } from '../context/MarketContext';
+import { useAlerts } from '../context/AlertsContext';
+import { formatCurrency } from '../utils/format';
 
 function CreateAlertModal({ listings, onClose }) {
   const { addAlert, requestPermission } = useAlerts();
@@ -11,89 +15,93 @@ function CreateAlertModal({ listings, onClose }) {
   const filtered = listings.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.symbol.toLowerCase().includes(search.toLowerCase())
-  ).slice(0, 8);
+  ).slice(0, 5);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selected) return toast.error('Select a coin first');
-    if (!value || isNaN(value)) return toast.error('Enter a valid price');
+    if (!selected) return toast.error('PROTOCOL_ERR: TARGET_UNDEFINED');
+    if (!value || isNaN(value)) return toast.error('PROTOCOL_ERR: INVALID_THRESHOLD');
     await requestPermission();
     try {
       await addAlert({ symbol: selected.symbol, coinName: selected.name, type, value, note });
+      toast.success('NEURAL_VECTOR_INITIALIZED');
       onClose();
-    } catch (err) {}
+    } catch (err) { toast.error('DEPLOYMENT_ERROR'); }
   };
 
-  const currentPrice = selected?.price;
-
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
-        <div className="modal-header">
-          <span className="modal-title">🔔 Create Price Alert</span>
-          <button className="modal-close" onClick={onClose}>×</button>
+    <div className="v4-modal-overlay" onClick={onClose} style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 10000 }}>
+      <div className="cmd-palette" style={{ width: '100%', maxWidth: 480, padding: 0 }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '24px', borderBottom: '2px solid var(--border)', background: '#000' }}>
+           <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>CONFIG_SURVEILLANCE_v4.2</div>
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <h2 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -0.5 }}>NEURAL_VECTOR_INIT</h2>
+             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: 24, cursor: 'pointer' }}>✕</button>
+           </div>
         </div>
 
-        <div className="form-group" style={{ position: 'relative' }}>
-          <label className="form-label">Cryptocurrency</label>
-          <input className="form-input" placeholder="Search coin…"
-            value={search} onChange={e => { setSearch(e.target.value); setSelected(null); }} />
-          {search && !selected && filtered.length > 0 && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', maxHeight: 220, overflowY: 'auto' }}>
-              {filtered.map(c => (
-                <div key={c.id || c.symbol} onMouseDown={() => { setSelected(c); setSearch(c.name); setValue(c.price.toFixed(2)); }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  <img src={c.logo} alt={c.symbol} width={24} height={24} style={{ borderRadius: '50%' }} onError={e => e.target.style.display = 'none'} />
-                  <span style={{ fontWeight: 600 }}>{c.name}</span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: 12, fontFamily: 'Space Mono' }}>{c.symbol}</span>
-                  <span style={{ marginLeft: 'auto', fontFamily: 'Space Mono', fontSize: 12 }}>{formatCurrency(c.price)}</span>
+        <form onSubmit={handleSubmit} style={{ padding: '32px', background: '#080808', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, marginBottom: 10, letterSpacing: 2 }}>TARGET_ASSET_NODE</label>
+            <div style={{ border: '2px solid var(--border)', padding: '0 12px', background: '#000' }}>
+              <input 
+                autoFocus
+                style={{ width: '100%', height: '48px', background: 'none', border: 'none', color: '#fff', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: 14 }}
+                placeholder="SCAN_NETWORK_FOR_ASSET..." 
+                value={search}
+                onChange={e => { setSearch(e.target.value); setSelected(null); }} 
+              />
+              {search && !selected && filtered.length > 0 && (
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', zIndex: 100, background: '#000', border: '2px solid var(--border-strong)', padding: 8 }}>
+                  {filtered.map(c => (
+                    <div key={c.id || c.symbol} onClick={() => { setSelected(c); setSearch(c.name); setValue(c.price.toFixed(4)); }}
+                       style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}>
+                      <img src={c.logo} width={20} height={20} style={{ borderRadius: '2px' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 900, fontSize: 12, color: '#fff' }}>{c.symbol}/USDT</div>
+                        <div style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800 }}>{c.name.toUpperCase()}</div>
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--green)', fontWeight: 800 }}>{formatCurrency(c.price)}</div>
+                    </div>
+                  ))}
                 </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, marginBottom: 10, letterSpacing: 2 }}>VECTOR_CONDITION</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+              {[
+                { id: 'above', label: '▲ BREAKOUT', color: 'var(--green)' },
+                { id: 'below', label: '▼ BREAKDOWN', color: 'var(--red)' }
+              ].map(opt => (
+                <button key={opt.id} type="button" onClick={() => setType(opt.id)}
+                  style={{ 
+                    padding: '14px', border: '2px solid var(--border)',
+                    background: type === opt.id ? '#fff' : '#000',
+                    color: type === opt.id ? '#000' : 'var(--text-dim)', 
+                    fontWeight: 900, fontSize: 10, cursor: 'pointer', letterSpacing: 1
+                  }}>
+                  {opt.label}
+                </button>
               ))}
             </div>
-          )}
-        </div>
-
-        {selected && (
-          <div style={{ background: 'var(--bg-input)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Current price</span>
-            <span style={{ fontFamily: 'Space Mono', fontWeight: 700, color: 'var(--accent)' }}>{formatCurrency(currentPrice)}</span>
           </div>
-        )}
 
-        <div className="form-group">
-          <label className="form-label">Alert Condition</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {[['above', '📈 Price goes ABOVE', 'var(--green)'], ['below', '📉 Price drops BELOW', 'var(--red)']].map(([v, label, color]) => (
-              <button key={v} type="button" onClick={() => setType(v)}
-                style={{ padding: '10px 12px', borderRadius: 8, border: `2px solid ${type === v ? color : 'var(--border)'}`, background: type === v ? color + '15' : 'var(--bg-input)', color: type === v ? color : 'var(--text-secondary)', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: '0.2s' }}>
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Target Price (USD)</label>
-          <input className="form-input" type="number" step="any" placeholder="0.00"
-            value={value} onChange={e => setValue(e.target.value)} />
-          {selected && value && !isNaN(value) && (
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-              {type === 'above' ? '▲' : '▼'} {Math.abs(((parseFloat(value) - currentPrice) / currentPrice) * 100).toFixed(2)}% from current price
+          <div>
+            <label style={{ display: 'block', fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, marginBottom: 10, letterSpacing: 2 }}>PRICE_THRESHOLD (USDT)</label>
+            <div style={{ border: '2px solid var(--border)', padding: '0 12px', background: '#000' }}>
+              <input 
+                type="number" step="any" placeholder="0.0000"
+                value={value} onChange={e => setValue(e.target.value)} 
+                style={{ width: '100%', height: '48px', background: 'none', border: 'none', color: '#fff', outline: 'none', fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 900 }}
+              />
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className="form-group">
-          <label className="form-label">Note (optional)</label>
-          <input className="form-input" placeholder="e.g. Breakout level, Support zone…" value={note} onChange={e => setNote(e.target.value)} />
-        </div>
-
-        <div className="modal-footer">
-          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSubmit}>🔔 Create Alert</button>
-        </div>
+          <button type="submit" className="btn-success" style={{ padding: '16px', fontSize: 11, fontWeight: 900, letterSpacing: 2, marginTop: 12 }}>ENGAGE_NEURAL_SURVEILLANCE</button>
+        </form>
       </div>
     </div>
   );
@@ -106,59 +114,57 @@ function AlertCard({ alert, currentPrice }) {
         ? (currentPrice / alert.value) * 100
         : (alert.value / currentPrice) * 100))
     : 0;
-  const isClose = progress > 85 && !alert.triggered;
-  const typeColor = alert.type === 'above' ? 'var(--green)' : 'var(--red)';
+  const isCritical = progress > 90 && !alert.triggered;
+  const typeColor = alert.type === 'above' ? '#10b981' : '#ff4d4d';
 
   return (
-    <div style={{
-      background: 'var(--bg-card)', border: `1px solid ${alert.triggered ? 'rgba(245,158,11,0.3)' : alert.active ? 'var(--border)' : 'var(--border)'}`,
-      borderRadius: 'var(--radius)', padding: '16px 18px', opacity: alert.active ? 1 : 0.55, transition: '0.2s',
-      borderLeft: `3px solid ${alert.triggered ? 'var(--gold)' : alert.active ? typeColor : 'var(--border)'}`,
+    <div className="card alert-card-v4" style={{ 
+      padding: '20px 24px', borderLeft: `4px solid ${alert.triggered ? 'var(--gold)' : typeColor}`,
+      background: '#080808', opacity: alert.active ? 1 : 0.5, transition: '0.2s'
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 20 }}>{alert.triggered ? '✅' : alert.active ? '🔔' : '🔕'}</span>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{alert.coinName} <span style={{ fontFamily: 'Space Mono', fontSize: 11, color: 'var(--text-muted)' }}>({alert.symbol})</span></div>
-            <div style={{ fontSize: 12, color: typeColor, fontWeight: 600 }}>
-              {alert.type === 'above' ? '↑ Above' : '↓ Below'} {formatCurrency(alert.value)}
-            </div>
-          </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+           <div style={{ fontSize: 16 }}>
+             {alert.triggered ? '⚡' : alert.active ? '📡' : '⏸'}
+           </div>
+           <div>
+             <div style={{ fontWeight: 900, fontSize: 13, color: '#fff', fontFamily: 'var(--font-mono)' }}>{alert.symbol}/USDT</div>
+             <div style={{ fontSize: 8, color: typeColor, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>
+               VECTOR_{alert.type === 'above' ? 'BREAKOUT' : 'BREAKDOWN'} @ {formatCurrency(alert.value)}
+             </div>
+           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {!alert.triggered && (
-            <button onClick={() => toggleAlert(alert._id)} title={alert.active ? 'Pause' : 'Resume'}
-              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-input)', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}>
-              {alert.active ? '⏸' : '▶'}
-            </button>
-          )}
-          <button onClick={() => removeAlert(alert._id)}
-            style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--red-bg)', background: 'var(--red-bg)', color: 'var(--red)', fontSize: 12, cursor: 'pointer' }}>
-            ✕
-          </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+           {!alert.triggered && (
+             <button onClick={() => toggleAlert(alert._id)} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-dim)', padding: '4px 8px', fontSize: 9, cursor: 'pointer' }}>
+               {alert.active ? 'PAUSE' : 'RESUME'}
+             </button>
+           )}
+           <button onClick={() => removeAlert(alert._id)} style={{ background: 'none', border: '1px solid var(--red)', color: 'var(--red)', padding: '4px 8px', fontSize: 9, cursor: 'pointer' }}>✕</button>
         </div>
       </div>
 
-      {!alert.triggered && currentPrice && (
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
-            <span>Current: <span style={{ color: 'var(--text-primary)', fontFamily: 'Space Mono' }}>{formatCurrency(currentPrice)}</span></span>
-            <span style={{ color: isClose ? 'var(--gold)' : 'var(--text-muted)' }}>{isClose ? '⚡ Getting close!' : `${progress.toFixed(0)}%`}</span>
+      {!alert.triggered ? (
+        <div style={{ marginTop: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, marginBottom: 6 }}>
+            <span>NODE_SPOT: <span style={{ color: '#fff', fontFamily: 'var(--font-mono)' }}>{currentPrice ? formatCurrency(currentPrice) : 'SYNCING...'}</span></span>
+            <span style={{ color: isCritical ? 'var(--gold)' : 'var(--text-dim)' }}>{isCritical ? 'CRITICAL_PROXIMITY' : `${progress.toFixed(1)}%`}</span>
           </div>
-          <div style={{ height: 4, background: 'var(--bg-input)', borderRadius: 2 }}>
-            <div style={{ width: `${progress}%`, height: '100%', background: isClose ? 'var(--gold)' : typeColor, borderRadius: 2, transition: '0.5s ease' }} />
+          <div style={{ height: 4, background: 'var(--border)', width: '100%', borderRadius: 2 }}>
+            <div style={{ 
+              height: '100%', width: `${progress}%`, background: isCritical ? 'var(--gold)' : typeColor,
+              borderRadius: 2, transition: '0.1s'
+            }} />
           </div>
+        </div>
+      ) : (
+        <div style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid var(--gold)', padding: '10px 14px', marginTop: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--gold)', fontFamily: 'var(--font-mono)' }}>LATCH_HIT @ {formatCurrency(alert.triggeredPrice)}</div>
+          <div style={{ fontSize: 8, color: 'var(--text-dim)', marginTop: 4, fontWeight: 800 }}>UTC: {new Date(alert.triggeredAt).toISOString().split('T')[1].slice(0, 8)}</div>
         </div>
       )}
 
-      {alert.triggered && (
-        <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 6, padding: '6px 10px', fontSize: 12 }}>
-          ✅ Triggered at {formatCurrency(alert.triggeredPrice)} · {new Date(alert.triggeredAt).toLocaleString()}
-        </div>
-      )}
-
-      {alert.note && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic' }}>"{alert.note}"</div>}
-      <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 8 }}>Created {new Date(alert.createdAt).toLocaleDateString()}</div>
+      {alert.note && <div style={{ fontSize: 9, color: 'var(--text-dim)', marginTop: 12, fontStyle: 'italic', borderTop: '1px solid var(--border)', paddingTop: 8 }}>"{alert.note}"</div>}
     </div>
   );
 }
@@ -170,8 +176,8 @@ export default function AlertsPage() {
   const [filter, setFilter] = useState('all');
 
   if (loading) return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="spinner"></div>
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="v4-ping-large" />
     </div>
   );
 
@@ -182,56 +188,55 @@ export default function AlertsPage() {
   const triggeredCount = alerts.filter(a => a.triggered).length;
 
   return (
-    <div>
-      <div className="page-header">
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <header style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="page-title">Price Alerts <span style={{ fontSize: 14, color: 'var(--text-muted)', marginLeft: 8 }}>{activeCount} active</span></div>
-          <div className="page-subtitle">Real-time notifications managed on the backend and pushed to your terminal</div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 4, marginBottom: 6 }}>SURVEILLANCE_CENTER_v4.2</div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>NEURAL_THREAT_MONITOR</h1>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Alert</button>
+        <button className="btn-success" onClick={() => setShowModal(true)} style={{ padding: '12px 24px', fontSize: 11, fontWeight: 900, letterSpacing: 2 }}>+ INITIALIZE_SURVEILLANCE</button>
+      </header>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }}>
+        <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--blue)', background: '#080808' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>TOTAL_MONITORS</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)', marginTop: 8 }}>{alerts.length}</div>
+        </div>
+        <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--green)', background: '#080808' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>ACTIVE_VECTORS</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--green)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>{activeCount}</div>
+        </div>
+        <div className="card" style={{ padding: '24px', borderLeft: '4px solid var(--gold)', background: '#080808' }}>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>LATCHED_INTERSECTS</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: 'var(--gold)', fontFamily: 'var(--font-mono)', marginTop: 8 }}>{triggeredCount}</div>
         </div>
       </div>
 
-      <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)', marginBottom: 24 }}>
-        <div className="stat-card blue">
-          <div className="stat-label">Total Alerts</div>
-          <div className="stat-value">{alerts.length}</div>
-        </div>
-        <div className="stat-card green">
-          <div className="stat-label">Active</div>
-          <div className="stat-value">{activeCount}</div>
-        </div>
-        <div className="stat-card gold">
-          <div className="stat-label">Triggered</div>
-          <div className="stat-value">{triggeredCount}</div>
-        </div>
-      </div>
-
-      <div className="tabs">
-        {[['all', 'All'], ['active', '🔔 Active'], ['triggered', '✅ Triggered']].map(([v, l]) => (
-          <button key={v} className={`tab ${filter === v ? 'active' : ''}`} onClick={() => setFilter(v)}>{l}</button>
+      <div style={{ display: 'flex', gap: 1, marginBottom: 32 }}>
+        {[
+          { id: 'all', label: 'ALL_VECTORS' },
+          { id: 'active', label: 'ACTIVE_VECTORS' },
+          { id: 'triggered', label: 'LATCH_HITS' }
+        ].map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)} 
+            style={{ 
+              background: filter === f.id ? '#fff' : '#000', 
+              color: filter === f.id ? '#000' : 'var(--text-dim)',
+              border: '2px solid var(--border)',
+              padding: '10px 20px', fontSize: 9, fontWeight: 900, letterSpacing: 2
+            }}>{f.label}</button>
         ))}
       </div>
 
-      {'Notification' in window && Notification.permission === 'default' && (
-        <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 'var(--radius)', padding: '12px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 13 }}>🔔 Enable browser notifications to get alerts even when this tab isn't focused</span>
-          <button className="btn btn-primary btn-sm" onClick={() => Notification.requestPermission()}>Enable</button>
-        </div>
-      )}
-
       {filtered.length === 0 ? (
-        <div className="card">
-          <div className="empty-state">
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
-            <h3>No alerts yet</h3>
-            <p>Set price alerts and get notified when your targets are hit</p>
-            <button className="btn btn-primary" onClick={() => setShowModal(true)} style={{ marginTop: 16 }}>Create First Alert</button>
-          </div>
+        <div className="v4-card" style={{ textAlign: 'center', padding: '120px 0', borderStyle: 'dashed' }}>
+           <div style={{ fontSize: 48, marginBottom: 24, opacity: 0.1, color: '#fff' }}>📡</div>
+           <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 12 }}>SURVEILLANCE_MATRIX_EMPTY</div>
+           <p style={{ fontSize: 13, color: '#4a5e78', maxWidth: 450, margin: '0 auto', lineHeight: 1.6 }}>Initialize your first neural price vector to begin real-time terminal surveillance across all market nodes.</p>
+           <button className="v4-deploy-btn" style={{ marginTop: 32 }} onClick={() => setShowModal(true)}>INITIALIZE_PRIMARY_VECTOR</button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 24 }}>
           {filtered.map(alert => (
             <AlertCard key={alert._id} alert={alert} currentPrice={prices[alert.symbol]} />
           ))}
@@ -239,6 +244,11 @@ export default function AlertsPage() {
       )}
 
       {showModal && <CreateAlertModal listings={listings} onClose={() => setShowModal(false)} />}
+
+      <style>{`
+        .alert-card-v4 { transition: 0.1s; border: 2px solid var(--border); }
+        .alert-card-v4:hover { border-color: #fff; }
+      `}</style>
     </div>
   );
 }

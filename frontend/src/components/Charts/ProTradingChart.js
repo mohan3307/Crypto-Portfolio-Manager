@@ -95,6 +95,28 @@ export default function ProTradingChart({ symbol = 'BTC', coinName = 'Bitcoin', 
   const prevPriceRef = useRef(null);
   const lastPriceRef = useRef(null);
   const rafRef       = useRef(null);
+  const [liquidations, setLiquidations] = useState([]);
+  const bubblesRef = useRef([]);
+
+  // Mock socket for liquidations (in a real app, use existing context/socket)
+  useEffect(() => {
+    const iv = setInterval(() => {
+      if (Math.random() > 0.8) {
+        const side = Math.random() > 0.5 ? 'long' : 'short';
+        const amt  = Math.random() * 500000 + 10000;
+        const liqP = lastPriceRef.current * (1 + (Math.random() - 0.5) * 0.05);
+        bubblesRef.current.push({
+          id: Date.now(),
+          price: liqP,
+          amount: amt,
+          side: side,
+          life: 1.0,
+          time: Date.now()
+        });
+      }
+    }, 3000);
+    return () => clearInterval(iv);
+  }, []);
 
   // ── Fetch data ──────────────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
@@ -398,6 +420,41 @@ export default function ProTradingChart({ symbol = 'BTC', coinName = 'Bitcoin', 
         ctx.fillText(tag, W - pr + 2 + tagW / 2, y + 3);
       }
     }
+
+    // ── Liquidation Heatmap Overlay ───────────────────────────────────────
+    bubblesRef.current = bubblesRef.current.filter(b => b.life > 0);
+    bubblesRef.current.forEach(b => {
+      const y = toY(b.price);
+      if (y < pt || y > pt + chartH) return;
+      
+      b.life -= 0.002;
+      const size = Math.sqrt(b.amount) / 15 + 4;
+      const alpha = Math.floor(b.life * 255).toString(16).padStart(2, '0');
+      const baseClr = b.side === 'long' ? '#ff3355' : '#00ffbb';
+      
+      // Draw Heatmap Blob
+      const grad = ctx.createRadialGradient(toX(visCandles.length - 1), y, 0, toX(visCandles.length - 1), y, size * 3);
+      grad.addColorStop(0, baseClr + alpha);
+      grad.addColorStop(1, baseClr + '00');
+      
+      ctx.beginPath();
+      ctx.fillStyle = grad;
+      ctx.arc(toX(visCandles.length - 1), y, size * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core Marker
+      ctx.beginPath();
+      ctx.fillStyle = baseClr + alpha;
+      ctx.arc(toX(visCandles.length - 1), y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      if (b.life > 0.5) {
+         ctx.fillStyle = '#ffffff' + alpha;
+         ctx.font = 'bold 8px var(--font-mono)';
+         ctx.textAlign = 'right';
+         ctx.fillText(`${(b.amount / 1000).toFixed(0)}K`, toX(visCandles.length - 1) - 10, y + 3);
+      }
+    });
 
     // Crosshair
     if (crosshair) {

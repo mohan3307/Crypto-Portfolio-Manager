@@ -56,81 +56,35 @@ const DEFI_TERMS = {
 function getAIResponse(message) {
   const msg = message.toLowerCase().trim();
 
-  // Greetings
   if (KNOWLEDGE.greetings.some(g => msg.includes(g))) {
-    return '👋 Hey there! I\'m CryptoNova AI. I can help you with:\n• Crypto explanations & fundamentals\n• Trading strategies & tips\n• DeFi terms & concepts\n• Technical indicators\n\nWhat would you like to know?';
+    return '👋 Welcome to the Neural Interface. I am Nova-7.\n\nI can assist with:\n• Protocol fundamental analysis\n• Yield farming & staking diagnostics\n• Technical indicator interpretation\n• Portfolio structural optimization\n\nWhat vector shall we analyze today?';
   }
 
-  // Farewells
   if (KNOWLEDGE.farewells.some(f => msg.includes(f))) {
-    return '👋 Goodbye! Stay safe and trade smart! Remember: bull markets make you feel like a genius, bear markets remind you of humility. 😊';
+    return '👋 Protocol terminated. Stay disciplined and maintain structural integrity. The market is a machine; trade accordingly. 😊';
   }
 
-  // Thanks
   if (KNOWLEDGE.thanks.some(t => msg.includes(t))) {
-    return '😊 You\'re welcome! Always happy to help. Any other crypto questions?';
+    return '😊 Intelligence parity achieved. Happy to serve the cluster. Any further queries?';
   }
 
-  // Price inquiry
   if ((msg.includes('price') || msg.includes('worth') || msg.includes('value') || msg.includes('how much')) ) {
-    if (msg.includes('bitcoin') || msg.includes('btc')) return '📊 Bitcoin (BTC) price updates are shown in real-time on the Trading Terminal page. Check the left panel for the latest BTC price!';
-    if (msg.includes('ethereum') || msg.includes('eth')) return '📊 Ethereum (ETH) prices are available live on the Trading Terminal. It is currently trading around its recent range.';
-    return '📊 For live prices, check the **Trading Terminal** page or the **Market** page! Prices update every 20 seconds from live market feeds.';
+    return '📊 Real-time price vectors are streaming in the Trading Terminal. Check the liquidity panels for sub-second precision.';
   }
 
-  // Prediction / forecast
   if (msg.includes('predict') || msg.includes('forecast') || msg.includes('future') || msg.includes('moon') || msg.includes('pump')) {
-    return '🤖 For AI price predictions, check the **AI Signal** tab in the Trading Terminal! It uses RSI, MACD, Bollinger Bands, and momentum to generate buy/sell signals with confidence scores.\n\n⚠️ Remember: No one can accurately predict crypto prices. Use signals as one tool, not the only tool.';
+    return '🤖 Predictive vectors are available in the **Neural Forecasting** panel. We analyze LSTM-V4 gradients to project T+24H market paths.\n\n⚠️ Caution: All projections are probabilistic, not deterministic.';
   }
 
-  // Investment advice
-  if (msg.includes('buy') || msg.includes('sell') || msg.includes('invest') || msg.includes('should i')) {
-    return '⚠️ **This is not financial advice.** I can share educational information, but investment decisions are yours to make.\n\n📚 Key principles:\n• Never invest more than you can afford to lose\n• Diversify your portfolio\n• Have a clear exit strategy\n• Dollar-cost average to reduce risk\n\nCheck the AI Signal panel for technical analysis signals!';
-  }
-
-  // Coin-specific facts
   for (const [name, info] of Object.entries(COIN_FACTS)) {
     if (msg.includes(name) || msg.includes(info.sym.toLowerCase())) {
-      return `🪙 **${name.charAt(0).toUpperCase() + name.slice(1)} (${info.sym})**\n\n${info.desc}`;
+      return `🪙 **NODE_IDENTIFIED: ${name.toUpperCase()} (${info.sym})**\n\n${info.desc}`;
     }
   }
 
-  // DeFi terms
-  for (const [term, explanation] of Object.entries(DEFI_TERMS)) {
-    if (msg.includes(term)) {
-      return `📖 **${term.toUpperCase()}**\n\n${explanation}`;
-    }
-  }
-
-  // Trading tips
-  if (msg.includes('tip') || msg.includes('advice') || msg.includes('strategy') || msg.includes('help')) {
-    return TIPS[Math.floor(Math.random() * TIPS.length)] + '\n\nAsk me about specific coins, DeFi terms, or trading concepts!';
-  }
-
-  // Technical analysis
-  if (msg.includes('technical') || msg.includes('indicator') || msg.includes('chart') || msg.includes('analysis')) {
-    return '📈 **Technical Analysis Tools in CryptoNova:**\n\n• **RSI** — Momentum oscillator (0-100)\n• **MACD** — Trend direction & momentum\n• **Bollinger Bands** — Volatility & price channels\n• **SMA/EMA** — Moving averages for trend\n• **Volume** — Confirms price moves\n\nAll these are available on the Trading Terminal chart!';
-  }
-
-  // Blockchain basics
-  if (msg.includes('blockchain') || msg.includes('what is crypto') || msg.includes('how does')) {
-    return '⛓️ **Blockchain Basics:**\n\nA blockchain is a distributed ledger of transactions verified by a network of nodes. Key properties:\n\n• **Decentralized** — No single authority controls it\n• **Immutable** — Transactions cannot be altered\n• **Transparent** — All transactions are public\n• **Secure** — Cryptographically linked blocks\n\nCrypto currencies (BTC, ETH) use blockchain as their foundation.';
-  }
-
-  // Portfolio help
-  if (msg.includes('portfolio') || msg.includes('diversif') || msg.includes('allocat')) {
-    return '📦 **Portfolio Strategy Tips:**\n\n• **Core (50-60%):** BTC + ETH as base\n• **Growth (25-35%):** L1s like SOL, AVAX, NEAR\n• **High-risk (10-15%):** Meme coins, micro-caps\n• **Stablecoins:** Keep 5-10% for buying dips\n\nCheck your portfolio on the **Portfolio** page!';
-  }
-
-  // Market conditions
-  if (msg.includes('market') || msg.includes('bull') || msg.includes('bear') || msg.includes('crash') || msg.includes('dip')) {
-    return '📊 **Market Cycle Wisdom:**\n\n🐂 **Bull Market signals:** New ATHs, high trading volumes, greed index >70, mainstream media coverage\n🐻 **Bear Market signals:** Drawdowns >60%, low volume, fear index <30, project FUD\n\nThe **Fear & Greed Index** on the Dashboard gives a current market sentiment reading!';
-  }
-
-  // Default
   const defaults = [
-    '🤔 Interesting question! Try asking me about:\n• Specific coins (Bitcoin, Ethereum, Solana)\n• DeFi terms (yield farming, staking, AMM)\n• Trading concepts (RSI, MACD, bull/bear market)\n• Portfolio strategies',
-    '🤖 I\'m best at crypto education! Ask me about:\n• How specific cryptocurrencies work\n• Technical analysis indicators\n• DeFi and Web3 concepts\n• Trading tips and risk management',
+    '🤔 QUERY_UNRECOGNIZED. Try asking about:\n• Asset Nodes (BTC, ETH, SOL)\n• DeFi Stratums (Yield, Staking, AMM)\n• Momentum Indicators (RSI, MACD)\n• Risk Management Parameters',
+    '🤖 NEURAL_MISMATCH. I am optimized for crypto-economic intelligence. Ask me about L1 architectures, smart contract diagnostics, or technical market oscillators.'
   ];
   return defaults[Math.floor(Math.random() * defaults.length)];
 }
@@ -140,44 +94,46 @@ function ChatMessage({ msg }) {
   const isUser = msg.role === 'user';
   return (
     <div style={{
-      display: 'flex', gap: 10, marginBottom: 14,
+      display: 'flex', gap: 12, marginBottom: 20,
       flexDirection: isUser ? 'row-reverse' : 'row',
       alignItems: 'flex-start',
     }}>
       <div style={{
-        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-        background: isUser ? 'linear-gradient(135deg,#3b82f6,#6366f1)' : 'linear-gradient(135deg,#00d4aa,#0891b2)',
+        width: 36, height: 36, borderRadius: 12, flexShrink: 0,
+        background: isUser ? 'linear-gradient(135deg,#3b82f6,#8b5cf6)' : 'linear-gradient(135deg,#10b981,#059669)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 14, border: `1px solid ${isUser ? '#3b82f6' : '#00d4aa'}44`,
+        fontSize: 16, border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: isUser ? '0 0 20px rgba(59,130,246,0.3)' : '0 0 20px rgba(16,185,129,0.3)'
       }}>
-        {isUser ? '👤' : '🤖'}
+        {isUser ? '👤' : '🧠'}
       </div>
       <div style={{
-        maxWidth: '78%', padding: '10px 14px', borderRadius: isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
-        background: isUser ? 'linear-gradient(135deg,rgba(59,130,246,0.2),rgba(99,102,241,0.15))' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${isUser ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.08)'}`,
-        fontSize: 13, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-line',
+        maxWidth: '82%', padding: '14px 18px', borderRadius: isUser ? '20px 4px 20px 20px' : '4px 20px 20px 20px',
+        background: isUser ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.03)',
+        border: `1px solid ${isUser ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)'}`,
+        fontSize: 13, color: '#fff', lineHeight: 1.6, whiteSpace: 'pre-line',
+        backdropFilter: 'blur(20px) saturate(210%)',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
       }}>
-        {msg.text}
-        <div style={{ fontSize: 10, color: '#4a5e78', marginTop: 5, textAlign: isUser ? 'right' : 'left' }}>
-          {msg.time}
+        <div style={{ position: 'relative' }}>
+          {msg.text}
+          <div style={{ 
+            fontSize: 9, color: '#4a5e78', marginTop: 10, textAlign: isUser ? 'right' : 'left', 
+            fontWeight: 900, fontFamily: 'Space Mono', letterSpacing: 0.5 
+          }}>
+            [{msg.role.toUpperCase()}_LOG_ENTRY // {msg.time}]
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Quick question chips ──────────────────────────────────────────────────
-const QUICK_QUESTIONS = [
-  'What is Bitcoin?', 'Explain DeFi', 'What is RSI?',
-  'Give me a trading tip', 'What is staking?', 'What is MACD?',
-];
-
 // ── Main AIChatBot component ──────────────────────────────────────────────
 export default function AIChatBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 0, role: 'ai', text: '👋 Hello! I\'m CryptoNova AI assistant.\n\nI can help you understand cryptocurrencies, DeFi concepts, trading strategies, and more!\n\nWhat would you like to know?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+    { id: 0, role: 'ai', text: 'PROTOCOL_INITIATED. I am Nova-7, your neural liquidity advisor.\n\nReady to analyze market vectors, evaluate DeFi protocols, or explain technical indicators.\n\nWhat intelligence do you require?', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -187,13 +143,9 @@ export default function AIChatBot() {
 
   useEffect(() => {
     if (open && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, open]);
-
-  useEffect(() => {
-    if (open && !minimized && inputRef.current) inputRef.current.focus();
-  }, [open, minimized]);
 
   const sendMessage = (text) => {
     const userText = (text || input).trim();
@@ -203,25 +155,32 @@ export default function AIChatBot() {
     setInput('');
     setIsTyping(true);
     
-    // Call our intelligent backend AI
-    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/ai/ask`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ message: userText })
-    })
-      .then(res => res.json())
-      .then(data => {
-        const response = data.response;
-        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: response, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    // Check if token exists, fallback to Mock if not
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/ai/ask`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ message: userText })
       })
-      .catch(err => {
-        console.error("AI Error:", err);
-        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: "Sorry, I'm having trouble connecting to my brain right now. Please try again later!", time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
-      })
-      .finally(() => setIsTyping(false));
+        .then(res => res.json())
+        .then(data => {
+          setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: data.response, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+        })
+        .catch(() => {
+          setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: getAIResponse(userText), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+        })
+        .finally(() => setIsTyping(false));
+    } else {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: getAIResponse(userText), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+        setIsTyping(false);
+      }, 800);
+    }
   };
 
   const handleKey = (e) => {
@@ -230,57 +189,58 @@ export default function AIChatBot() {
 
   return (
     <>
-      {/* Floating action button */}
       <div
         onClick={() => setOpen(o => !o)}
-        title="AI Chat Assistant"
+        title="NEURAL_ADVISOR"
         style={{
-          position: 'fixed', bottom: 28, right: 28, zIndex: 9999,
-          width: 56, height: 56, borderRadius: '50%',
-          background: 'linear-gradient(135deg,#00d4aa,#3b82f6)',
-          boxShadow: '0 4px 20px rgba(0,212,170,0.4), 0 2px 8px rgba(0,0,0,0.4)',
+          position: 'fixed', bottom: 32, right: 32, zIndex: 9999,
+          width: 64, height: 64, borderRadius: 20,
+          background: 'linear-gradient(135deg,#00b0ff,#8b5cf6)',
+          boxShadow: '0 10px 40px rgba(59,130,246,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 24, transition: 'transform 0.2s, box-shadow 0.2s',
-          animation: open ? 'none' : 'chatPulse 2.5s infinite',
+          cursor: 'pointer', fontSize: 26, transition: '0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          border: '1px solid rgba(255,255,255,0.2)'
         }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)'; e.currentTarget.style.boxShadow = '0 15px 50px rgba(59,130,246,0.6)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(59,130,246,0.4)'; }}
       >
-        {open ? '✕' : '🤖'}
+        {open ? '✕' : '🧠'}
       </div>
 
-      {/* Chat window */}
       {open && (
-        <div style={{
-          position: 'fixed', bottom: 96, right: 28, zIndex: 9998,
-          width: minimized ? 280 : 380, height: minimized ? 52 : 560,
-          background: 'linear-gradient(180deg,#0d1829 0%,#08101e 100%)',
-          border: '1px solid rgba(0,212,170,0.2)',
-          borderRadius: 18, overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05)',
+        <div className="glass-heavy neural-chat-terminal" style={{
+          position: 'fixed', bottom: 112, right: 32, zIndex: 9998,
+          width: minimized ? 300 : 420, height: minimized ? 64 : 640,
+          borderRadius: 32, overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          fontFamily: 'Inter,sans-serif',
-          transition: 'height 0.25s ease, width 0.25s ease',
+          transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
         }}>
           {/* Header */}
           <div style={{
-            padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10,
-            background: 'linear-gradient(90deg,rgba(0,212,170,0.12),rgba(59,130,246,0.08))',
-            borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0,
+            padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 15,
+            background: 'rgba(0,0,0,0.2)',
+            borderBottom: '1px solid rgba(255,255,255,0.03)', flexShrink: 0
           }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#00d4aa,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤖</div>
+            <div style={{ 
+                width: 40, height: 40, borderRadius: 12, 
+                background: 'linear-gradient(135deg,#10b981,#059669)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                fontSize: 20, boxShadow: '0 0 15px rgba(16,185,129,0.3)' 
+            }}>🤖</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#e2e8f0' }}>CryptoNova AI</div>
-              <div style={{ fontSize: 11, color: '#00d4aa', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00d4aa', display: 'inline-block', animation: 'livepulse 1.8s infinite' }} />
-                Online · Crypto Expert
+              <div style={{ fontWeight: 900, fontSize: 13, color: '#fff', letterSpacing: 1.5 }}>NOVA-7 // NEURAL_ADVISOR</div>
+              <div style={{ fontSize: 9, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 900 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 8px var(--green)', display: 'inline-block' }} />
+                SYNCHRONIZED_ACTIVE
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => setMinimized(m => !m)} style={{ background: 'none', border: 'none', color: '#4a5e78', cursor: 'pointer', fontSize: 16, padding: 4, lineHeight: 1 }}>
-                {minimized ? '▲' : '▼'}
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setMinimized(m => !m)} style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: '#4a5e78', cursor: 'pointer', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {minimized ? '⤢' : '⤡'}
               </button>
-              <button onClick={() => setMessages([messages[0]])} style={{ background: 'none', border: 'none', color: '#4a5e78', cursor: 'pointer', fontSize: 12, padding: 4 }} title="Clear chat">
+              <button onClick={() => setMessages([messages[0]])} style={{ background: 'rgba(255,82,82,0.05)', border: 'none', color: 'var(--red)', cursor: 'pointer', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 🗑
               </button>
             </div>
@@ -288,15 +248,16 @@ export default function AIChatBot() {
 
           {!minimized && (
             <>
-              {/* Messages */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '14px 14px 8px', scrollbarWidth: 'thin', scrollbarColor: '#1a2840 transparent' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '24px', scrollbarWidth: 'none' }}>
                 {messages.map(msg => <ChatMessage key={msg.id} msg={msg} />)}
                 {isTyping && (
-                  <div style={{ display: 'flex', gap: 10, marginBottom: 12, alignItems: 'flex-start' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#00d4aa,#0891b2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🤖</div>
-                    <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px 16px 16px 16px' }}>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        {[0,1,2].map(i => <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: '#00d4aa', display: 'inline-block', animation: `typingDot 1s infinite ${i * 0.18}s` }} />)}
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'flex-start' }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🧠</div>
+                    <div style={{ padding: '14px 18px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '4px 20px 20px 20px' }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <div className="neural-typing-dot" />
+                        <div className="neural-typing-dot" style={{ animationDelay: '0.2s' }} />
+                        <div className="neural-typing-dot" style={{ animationDelay: '0.4s' }} />
                       </div>
                     </div>
                   </div>
@@ -304,44 +265,29 @@ export default function AIChatBot() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick questions */}
-              <div style={{ padding: '6px 12px', display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', flexShrink: 0 }}>
-                {QUICK_QUESTIONS.map(q => (
-                  <button key={q} onClick={() => sendMessage(q)} style={{
-                    padding: '4px 10px', borderRadius: 20, border: '1px solid rgba(0,212,170,0.2)',
-                    background: 'rgba(0,212,170,0.05)', color: '#00d4aa', fontSize: 11, cursor: 'pointer',
-                    whiteSpace: 'nowrap', transition: '0.15s', fontFamily: 'inherit',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,212,170,0.15)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,212,170,0.05)'}
-                  >
-                    {q}
+              <div style={{ padding: '0 24px 20px' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <textarea
+                    ref={inputRef}
+                    value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
+                    placeholder="QUERY_NEURAL_CORE..."
+                    rows={1}
+                    style={{
+                      flex: 1, background: 'transparent', border: 'none',
+                      padding: '10px 14px', color: '#fff', fontSize: 13, outline: 'none',
+                      fontFamily: 'Space Mono', resize: 'none', maxHeight: 120
+                    }}
+                  />
+                  <button onClick={() => sendMessage()} disabled={!input.trim()} style={{
+                    width: 44, height: 44, borderRadius: 14, border: 'none',
+                    background: input.trim() ? 'var(--blue)' : 'rgba(255,255,255,0.03)',
+                    color: '#fff', cursor: input.trim() ? 'pointer' : 'default',
+                    fontSize: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s',
+                    boxShadow: input.trim() ? '0 5px 15px rgba(59,130,246,0.3)' : 'none'
+                  }}>
+                    ➤
                   </button>
-                ))}
-              </div>
-
-              {/* Input */}
-              <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, flexShrink: 0 }}>
-                <input
-                  ref={inputRef}
-                  value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKey}
-                  placeholder="Ask anything about crypto..."
-                  style={{
-                    flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 10, padding: '9px 12px', color: '#e2e8f0', fontSize: 13, outline: 'none',
-                    fontFamily: 'inherit', transition: '0.15s',
-                  }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(0,212,170,0.4)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-                />
-                <button onClick={() => sendMessage()} disabled={!input.trim()} style={{
-                  width: 38, height: 38, borderRadius: 10, border: 'none',
-                  background: input.trim() ? 'linear-gradient(135deg,#00d4aa,#3b82f6)' : 'rgba(255,255,255,0.06)',
-                  color: input.trim() ? '#fff' : '#4a5e78', cursor: input.trim() ? 'pointer' : 'default',
-                  fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.15s',
-                }}>
-                  ➤
-                </button>
+                </div>
               </div>
             </>
           )}
@@ -349,8 +295,9 @@ export default function AIChatBot() {
       )}
 
       <style>{`
-        @keyframes chatPulse { 0%,100%{box-shadow:0 4px 20px rgba(0,212,170,0.4),0 2px 8px rgba(0,0,0,0.4)} 50%{box-shadow:0 4px 30px rgba(0,212,170,0.7),0 2px 8px rgba(0,0,0,0.4)} }
-        @keyframes typingDot { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+        .glass-heavy { background: rgba(10, 15, 28, 0.7) !important; backdrop-filter: blur(25px) saturate(210%); }
+        .neural-typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); opacity: 0.3; animation: neural-type 1.4s infinite; }
+        @keyframes neural-type { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
       `}</style>
     </>
   );

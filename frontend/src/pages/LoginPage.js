@@ -19,92 +19,91 @@ export default function LoginPage() {
       loginUser(res.data.token, res.data.user);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      setError(err.response?.data?.error || 'AUTHENTICATION_SEQUENCE_TERMINATED');
     } finally { setLoading(false); }
   };
 
   return (
-    <div className="auth-page" style={{ 
-      background: 'radial-gradient(circle at center, #0f172a 0%, #020617 100%)',
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' 
-    }}>
-      <div className="auth-card glass-heavy" style={{ 
-        width: '100%', maxWidth: 420, padding: '40px', borderRadius: 24,
-        border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
-      }}>
-        <div className="auth-logo" style={{ textAlign: 'center', marginBottom: 32 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: -1, marginBottom: 8 }}>⬡ CryptoNova</h1>
-          <p style={{ fontSize: 11, color: '#4a5e78', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700 }}>Institutional Portal</p>
-        </div>
+    <div className="v4-auth-container">
+      {/* Dynamic Neural Background */}
+      <div className="v4-neural-bg">
+        <div className="v4-aura a1" />
+        <div className="v4-aura a2" />
+        <div className="v4-aura a3" />
+      </div>
 
-        <div style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#eef2fa', marginBottom: 8 }}>Welcome back</h2>
-          <p style={{ fontSize: 13, color: '#8899b4' }}>Access your secure command center</p>
+      <div className="v4-auth-card">
+        <div className="v4-auth-header">
+          <div style={{ width: 60, height: 60, background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 900, margin: '0 auto 24px' }}>⬢</div>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>CRYPTONOVA_TERMINAL</h1>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 900, letterSpacing: 4, marginTop: 8 }}>NEURAL_GATEWAY_V4.2</div>
         </div>
 
         {error && (
-          <div style={{ 
-            padding: '12px 16px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)',
-            borderRadius: 12, color: 'var(--red)', fontSize: 12, marginBottom: 24, textAlign: 'center'
-          }}>
-            {error}
+          <div className="v4-error-box">
+             <span className="v4-error-tag">PROCESS_ERR:</span> {error.toUpperCase()}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4a5e78', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Email Address</label>
-            <input 
-              style={{ 
-                width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)',
-                borderRadius: 12, padding: '12px 16px', color: '#fff', fontSize: 14, outline: 'none'
-              }}
-              type="email" placeholder="you@example.com"
-              value={form.email} onChange={e => setForm({...form, email: e.target.value})} required 
-            />
-          </div>
-
-          <div className="form-group">
-            <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#4a5e78', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Password</label>
-            <div style={{ position: 'relative' }}>
-              <input 
-                style={{ 
-                  width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)',
-                  borderRadius: 12, padding: '12px 48px 12px 16px', color: '#fff', fontSize: 14, outline: 'none'
-                }}
-                type={showPassword ? "text" : "password"} 
-                placeholder="••••••••"
-                value={form.password} onChange={e => setForm({...form, password: e.target.value})} required 
+        <form onSubmit={handleSubmit} className="v4-auth-form">
+          <div className="v4-form-field">
+            <label>AUTHORITY_IDENTIFIER</label>
+            <div className="v4-input-wrap">
+               <input 
+                type="email" placeholder="ACCESS_ID@PROTOCOL.SYS"
+                value={form.email} onChange={e => setForm({...form, email: e.target.value})} required 
               />
-              <div 
-                onClick={() => setShowPassword(!showPassword)}
-                style={{ 
-                  position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', 
-                  cursor: 'pointer', color: showPassword ? 'var(--blue)' : '#4a5e78'
-                }}
-              >
-                {showPassword ? (
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                ) : (
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                )}
-              </div>
             </div>
           </div>
 
-          <button className="btn btn-primary" style={{ width: '100%', padding: '14px', borderRadius: 12, fontWeight: 800, fontSize: 14, marginTop: 12, background: 'var(--blue)', color: '#fff', border: 'none', cursor: loading ? 'not-allowed' : 'pointer' }}
-            type="submit" disabled={loading}>
-            {loading ? 'Authenticating...' : 'Sign In'}
+          <div className="v4-form-field">
+            <label>AUTHENTICATION_KEY</label>
+            <div className="v4-input-wrap">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="••••••••••••"
+                value={form.password} onChange={e => setForm({...form, password: e.target.value})} required 
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="v4-toggle-pw">
+                {showPassword ? '🔓' : '🔒'}
+              </button>
+            </div>
+          </div>
+
+          <button className="v4-auth-btn" type="submit" disabled={loading}>
+            {loading ? 'INITIATING_SEQUENCE...' : 'ENGAGE_BRIDGE_ACCESS'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: 32, fontSize: 13, color: '#4a5e78' }}>
-          Don't have an account? <Link to="/register" style={{ color: 'var(--blue)', fontWeight: 700, textDecoration: 'none' }}>Create one free</Link>
+        <div className="v4-auth-footer">
+          UNREGISTERED PERSONNEL? <Link to="/register">INITIALIZE_NEURAL_ENROLLMENT</Link>
         </div>
       </div>
 
       <style>{`
-        .glass-heavy { background: rgba(255, 255, 255, 0.03) !important; backdrop-filter: blur(20px) saturate(200%); }
+        .v4-auth-container { min-height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); }
+        
+        .v4-auth-card { width: 100%; maxWidth: 460px; background: #000; padding: 60px 48px; border: 2px solid var(--border); position: relative; z-index: 10; }
+        
+        .v4-auth-header { text-align: center; margin-bottom: 48px; }
+        
+        .v4-error-box { background: #000; border: 1px solid var(--red); padding: 16px; color: var(--red); font-size: 11px; font-weight: 900; margin-bottom: 32px; letter-spacing: 0.5px; border-radius: 2px; }
+        
+        .v4-auth-form { display: flex; flex-direction: column; gap: 32px; }
+        .v4-form-field label { display: block; font-size: 9px; font-weight: 900; color: var(--text-dim); letter-spacing: 2.5px; margin-bottom: 12px; }
+        .v4-input-wrap { position: relative; }
+        .v4-input-wrap input { width: 100%; background: #000; border: 1px solid var(--border-strong); padding: 16px 20px; color: #fff; font-size: 15px; font-weight: 900; outline: none; border-radius: 2px; transition: 0.1s; }
+        .v4-input-wrap input:focus { border-color: #fff; background: #080808; }
+        .v4-toggle-pw { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 16px; cursor: pointer; color: var(--text-dim); transition: 0.1s; display: flex; align-items: center; }
+        .v4-toggle-pw:hover { color: #fff; }
+ 
+        .v4-auth-btn { background: #fff; border: 1px solid #fff; color: #000; padding: 18px; font-size: 11px; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.1s; margin-top: 10px; border-radius: 2px; }
+        .v4-auth-btn:hover { background: #000; color: #fff; }
+        .v4-auth-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+ 
+        .v4-auth-footer { text-align: center; margin-top: 48px; font-size: 10px; color: var(--text-dim); font-weight: 900; letter-spacing: 1px; }
+        .v4-auth-footer a { color: #fff; text-decoration: none; margin-left: 10px; font-weight: 900; text-transform: uppercase; border-bottom: 1px solid #fff; }
+        .v4-auth-footer a:hover { opacity: 0.7; }
       `}</style>
     </div>
   );

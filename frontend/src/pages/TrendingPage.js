@@ -6,7 +6,7 @@ import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
 
 const COIN_COLORS = {
   BTC: '#f7931a', ETH: '#627eea', SOL: '#9945ff', BNB: '#f0b90b',
-  XRP: '#346aa9', DOGE: '#c2a633', ADA: '#0033ad', AVAX: '#e84142',
+  XRP: '#346aa9', DOGE: '#a78bfa', PEPE: '#00cc00', WIF: '#d1d5db'
 };
 
 function TrendingCoinCard({ coin, rank, sectionColor }) {
@@ -23,43 +23,41 @@ function TrendingCoinCard({ coin, rank, sectionColor }) {
   const isUp = coin.change24h >= 0;
 
   return (
-    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', borderBottom: expanded ? '1px solid var(--border)' : 'none' }}
-        onClick={() => setExpanded(e => !e)}>
-        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: color + '20', border: `1px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Space Mono', fontSize: '11px', color, fontWeight: 700, flexShrink: 0 }}>
-          #{rank}
-        </div>
-        <img src={coin.logo} alt={coin.symbol} width="34" height="34" style={{ borderRadius: '50%' }} onError={e => e.target.style.display = 'none'} />
+    <div className="card" style={{ border: '2px solid var(--border)', background: '#080808', cursor: 'pointer', transition: '0.1s' }} onClick={() => setExpanded(e => !e)}>
+      <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ width: 32, height: 32, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{rank.toString().padStart(2, '0')}</div>
+        <img src={coin.logo} alt={coin.symbol} width={34} height={34} style={{ borderRadius: '2px', background: '#fff' }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: '14px' }}>{coin.name}</div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'Space Mono' }}>{coin.symbol}</div>
+          <div style={{ fontWeight: 900, fontSize: 16, color: '#fff', letterSpacing: -0.5 }}>{coin.name.toUpperCase()}</div>
+          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: 1 }}>{coin.symbol}/USDT</div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'Space Mono', fontWeight: 700, fontSize: '14px' }}>{formatCurrency(coin.price)}</div>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: isUp ? '#00d4aa' : '#ff4757', marginTop: '2px' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: 18, color: '#fff' }}>{formatCurrency(coin.price)}</div>
+          <div style={{ fontSize: 10, fontWeight: 900, color: isUp ? 'var(--green)' : 'var(--red)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
             {isUp ? '▲' : '▼'} {Math.abs(coin.change24h).toFixed(2)}%
           </div>
         </div>
-        <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginLeft: '4px' }}>{expanded ? '▲' : '▼'}</div>
+        <div style={{ fontSize: 14, color: 'var(--text-dim)', marginLeft: 16 }}>{expanded ? '▲' : '▼'}</div>
       </div>
 
-      {expanded && (
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <LiveTradingChart symbol={coin.symbol} coinName={coin.name} color={color} />
+
+      {expanded ? (
+        <div style={{ padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ background: '#000', padding: '24px', border: '2px solid var(--border)' }}>
+            <LiveTradingChart symbol={coin.symbol} coinName={coin.name} color={color} />
+          </div>
           <AIPredictionPanel coin={coin} prices={prices} />
         </div>
-      )}
-
-      {!expanded && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: '1px solid var(--border)' }}>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: '#050505', borderTop: '2px solid var(--border)' }}>
           {[
-            { label: 'Market Cap', value: formatCurrency(coin.marketCap) },
-            { label: '24h Volume', value: formatCurrency(coin.volume24h) },
-            { label: '24h Change', value: formatPercent(coin.change24h), color: isUp ? '#00d4aa' : '#ff4757' },
+            { label: 'MARKET_CAP', value: formatCurrency(coin.marketCap) },
+            { label: '24H_VOLUME', value: formatCurrency(coin.volume24h) },
+            { label: '24H_CHANGE', value: formatPercent(coin.change24h), color: isUp ? 'var(--green)' : 'var(--red)' },
           ].map(({ label, value, color: c }) => (
-            <div key={label} style={{ padding: '10px 14px', borderRight: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
-              <div style={{ fontSize: '12px', fontFamily: 'Space Mono', fontWeight: 600, marginTop: '2px', color: c || 'var(--text-primary)' }}>{value}</div>
+            <div key={label} style={{ padding: '12px 24px', borderRight: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 1.5 }}>{label}</div>
+              <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 900, marginTop: 4, color: c || '#fff' }}>{value}</div>
             </div>
           ))}
         </div>
@@ -69,9 +67,9 @@ function TrendingCoinCard({ coin, rank, sectionColor }) {
 }
 
 const SECTIONS = {
-  gainers: { label: '🟢 Top Gainers', color: '#00d4aa' },
-  losers: { label: '🔴 Top Losers', color: '#ff4757' },
-  traded: { label: '🔥 Most Traded', color: '#3b82f6' },
+  gainers: { label: 'TOP_GAINERS', color: '#10b981', icon: '📈' },
+  losers: { label: 'TOP_LOSERS', color: '#ff4d4d', icon: '📉' },
+  traded: { label: 'MOST_TRADED', color: '#3b82f6', icon: '🔥' },
 };
 
 export default function TrendingPage() {
@@ -85,34 +83,46 @@ export default function TrendingPage() {
     return () => clearInterval(i);
   }, []);
 
-  if (loading) return <div className="loading-spinner"><div className="spinner"></div></div>;
+  if (loading) return (
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+       <div style={{ width: 44, height: 44, border: '4px solid var(--border)', borderTopColor: '#fff', borderRadius: '50%', animation: 'v4-spin 1s linear infinite' }} />
+       <style>{`@keyframes v4-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   const coinData = { gainers: trending?.topGainers, losers: trending?.topLosers, traded: trending?.mostTraded };
   const currentSection = SECTIONS[activeTab];
   const currentData = coinData[activeTab] || [];
 
   return (
-    <div>
-      <div className="page-header">
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <header style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="page-title">Trending</div>
-          <div className="page-subtitle">Click any coin to expand live chart + AI prediction analysis</div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 4, marginBottom: 6 }}>MARKET_MOMENTUM_v4.2</div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>MOMENTUM_RADAR_SCAN</h1>
         </div>
-      </div>
+        <div style={{ display: 'flex', gap: 1 }}>
+          {Object.entries(SECTIONS).map(([key, s]) => (
+            <button key={key} onClick={() => setActiveTab(key)} 
+              style={{ 
+                background: activeTab === key ? '#fff' : '#000', 
+                color: activeTab === key ? '#000' : 'var(--text-dim)',
+                border: '2px solid var(--border)',
+                padding: '10px 20px', fontSize: 9, fontWeight: 900, letterSpacing: 2
+              }}>{s.label}</button>
+          ))}
+        </div>
+      </header>
 
-      <div className="tabs">
-        {Object.entries(SECTIONS).map(([key, s]) => (
-          <button key={key} className={`tab ${activeTab === key ? 'active' : ''}`} onClick={() => setActiveTab(key)}>
-            {s.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {currentData.map((coin, i) => (
           <TrendingCoinCard key={coin.id || coin.symbol} coin={coin} rank={i + 1} sectionColor={currentSection.color} />
         ))}
       </div>
+
+      <style>{`
+        .card:hover { border-color: #fff !important; z-index: 10; }
+      `}</style>
     </div>
   );
 }

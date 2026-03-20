@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import TradingViewChart from '../components/Charts/TradingViewChart';
-import OrderBook from '../components/Charts/OrderBook';
-import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
-import TickerTape from '../components/Charts/TickerTape';
+import ProTradingChart from '../components/Charts/ProTradingChart';
+import ExecutionBlade from '../components/Tools/ExecutionBlade';
 import NewsFeed from '../components/Charts/NewsFeed';
-import LiquidationMap from '../components/Charts/LiquidationMap';
+import AIPredictionPanel from '../components/Dashboard/AIPredictionPanel';
+import OrderBook from '../components/Dashboard/OrderBook';
+import TickerTape from '../components/Dashboard/TickerTape';
 import { getListings, getChartData } from '../services/api';
 import { formatCurrency, formatPercent } from '../utils/format';
 
-// ── Comprehensive coin color map (120+ coins) ─────────────────────────────
 const COIN_COLORS = {
   BTC:'#f7931a', ETH:'#627eea', SOL:'#9945ff', BNB:'#f0b90b',
   XRP:'#346aa9', DOGE:'#c2a633', ADA:'#0033ad', DOT:'#e6007a',
@@ -42,29 +41,29 @@ const COIN_COLORS = {
   APE:'#0043ce', EGLD2:'#23f7dd', STEEM:'#4ba2f2',
 };
 
-const DEFAULT_WATCH = ['BTC','ETH','SOL','BNB','XRP','DOGE','PEPE','WIF','SUI','INJ','AVAX','NEAR'];
+const DEFAULT_WATCH = ['BTC','ETH','SOL','BNB','PEPE','SUI','NEAR','INJ'];
 
 function StatPill({ label, value, color }) {
+  const accent = color === '#10b981' ? 'var(--green)' : color === '#ff4d4d' ? 'var(--red)' : '#fff';
   return (
-    <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.06)', borderRadius:8, padding:'7px 12px', minWidth:110 }}>
-      <div style={{ fontSize:9, color:'#3d5470', letterSpacing:1, textTransform:'uppercase', marginBottom:3, fontFamily:'JetBrains Mono,monospace' }}>{label}</div>
-      <div style={{ fontSize:13, fontWeight:700, fontFamily:'JetBrains Mono,monospace', color: color||'#eef2fa' }}>{value}</div>
+    <div className="card" style={{ padding: '8px 16px', background: '#000', border: '2px solid var(--border)', minWidth: 130 }}>
+      <div style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 13, fontWeight: 900, fontFamily: 'var(--font-mono)', color: accent }}>{value}</div>
     </div>
   );
 }
 
 export default function TradingPage() {
-  const [listings,   setListings]   = useState([]);
-  const [selected,   setSelected]   = useState(null);
-  const [prices7d,   setPrices7d]   = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [search,     setSearch]     = useState('');
-  const [watchSyms,  setWatchSyms]  = useState(DEFAULT_WATCH);
+  const [listings, setListings] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [prices7d, setPrices7d] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [watchSyms, setWatchSyms] = useState(DEFAULT_WATCH);
   const [rightPanel, setRightPanel] = useState('ai');
   const [fullScreen, setFullScreen] = useState(false);
   const fullRef = useRef(null);
 
-  // ── Data loading ────────────────────────────────────────────────────────
   useEffect(() => {
     getListings().then(r => {
       const d = r.data.data;
@@ -75,7 +74,7 @@ export default function TradingPage() {
 
     const iv = setInterval(() =>
       getListings().then(r => setListings(r.data.data)).catch(() => {}),
-    20000);
+    15000);
     return () => clearInterval(iv);
   }, []);
 
@@ -86,204 +85,173 @@ export default function TradingPage() {
     ).catch(() => {});
   }, [selected?.symbol]);
 
-  // ── Fullscreen API ──────────────────────────────────────────────────────
   const toggleFullscreen = () => {
     if (!fullScreen) {
       const el = fullRef.current || document.documentElement;
       if (el.requestFullscreen) el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
       setFullScreen(true);
     } else {
       if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
       setFullScreen(false);
     }
   };
 
-  useEffect(() => {
-    const onFsChange = () => {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement) setFullScreen(false);
-    };
-    document.addEventListener('fullscreenchange', onFsChange);
-    document.addEventListener('webkitfullscreenchange', onFsChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', onFsChange);
-      document.removeEventListener('webkitfullscreenchange', onFsChange);
-    };
-  }, []);
-
-  // ── Coin filtering ──────────────────────────────────────────────────────
-  const watchCoins   = listings.filter(c => watchSyms.includes(c.symbol));
-  const otherCoins   = listings.filter(c => !watchSyms.includes(c.symbol));
-  const searchResult = search
-    ? listings.filter(c =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.symbol.toLowerCase().includes(search.toLowerCase())
-      ).slice(0, 40)
-    : null;
+  const watchCoins = listings.filter(c => watchSyms.includes(c.symbol));
+  const otherCoins = listings.filter(c => !watchSyms.includes(c.symbol));
+  const searchResult = search ? listings.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.symbol.toLowerCase().includes(search.toLowerCase())).slice(0, 40) : null;
 
   const coinColor = selected ? (COIN_COLORS[selected.symbol] || '#3b82f6') : '#3b82f6';
-  const chgColor  = (selected?.change24h ?? 0) >= 0 ? '#00e5b3' : '#f03e55';
+  const chgColor = (selected?.change24h ?? 0) >= 0 ? '#10b981' : '#ff4d4d';
   const toggleWatch = s => setWatchSyms(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
 
   if (loading) return (
-    <div style={{ minHeight:'80vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ textAlign:'center' }}>
-        <div style={{ width:36, height:36, border:'2px solid #1a2840', borderTopColor:'#3b82f6', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 12px' }} />
-        <div style={{ fontSize:12, color:'#3d5470', fontFamily:'JetBrains Mono,monospace' }}>Connecting to markets...</div>
-      </div>
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 40, height: 40, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'v4-spin 1s linear infinite' }} />
     </div>
   );
 
   return (
     <div ref={fullRef} style={{
-      background:'#04070d',
-      height: fullScreen ? '100vh' : 'calc(100vh - 58px)',
-      display:'flex', flexDirection:'column',
-      fontFamily:'JetBrains Mono,monospace',
-      width: '100%',
-      maxWidth: '100%',
-      overflow: 'hidden',
-      boxSizing: 'border-box'
+      background: '#000',
+      height: fullScreen ? '100vh' : 'calc(100vh - 80px)',
+      display: 'flex', flexDirection: 'column',
+      width: '100%', maxWidth: '100%', overflow: 'hidden',
     }}>
-      {/* Ticker tape */}
       <TickerTape listings={listings} />
 
-      {/* Main 3-column grid */}
       <div style={{
-        flex:1, display:'grid',
-        gridTemplateColumns: fullScreen ? '200px minmax(0, 1fr)' : '210px minmax(0, 1fr) 320px',
-        overflow:'hidden',
+        flex: 1, display: 'grid',
+        gridTemplateColumns: fullScreen ? '240px minmax(0, 1fr)' : '260px minmax(0, 1fr) 380px',
+        overflow: 'hidden',
       }}>
 
-        {/* ── LEFT: Coin list ─────────────────────────────────────────── */}
-        <div style={{ borderRight:'1px solid #1a2840', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          {/* Search */}
-          <div style={{ padding:'10px 10px 8px', borderBottom:'1px solid #1a2840', flexShrink:0 }}>
-            <div style={{ background:'#0a1120', border:'1px solid #1a2840', borderRadius:6, display:'flex', alignItems:'center', gap:6, padding:'5px 9px' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3d5470" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search 120+ coins..."
-                style={{ background:'none', border:'none', color:'#eef2fa', fontSize:11, outline:'none', width:'100%', fontFamily:'inherit' }} />
-              {search && <button onClick={() => setSearch('')} style={{ background:'none', border:'none', color:'#3d5470', cursor:'pointer', fontSize:13 }}>×</button>}
+        {/* ── LEFT: Asset Navigator ── */}
+        <div style={{ borderRight: '2px solid var(--border)', display: 'flex', flexDirection: 'column', background: '#000' }}>
+          <div style={{ padding: '24px 16px 16px', flexShrink: 0 }}>
+            <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2, marginBottom: 16 }}>TACTICAL_NAVIGATOR</div>
+            <div className="v4-search-wrap">
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="SEARCH_VECTOR..." />
             </div>
           </div>
 
-          {/* List */}
-          <div style={{ flex:1, overflowY:'auto', scrollbarWidth:'thin', scrollbarColor:'#1a2840 transparent' }}>
+          <div className="v4-scroller" style={{ flex: 1, overflowY: 'auto', padding: '0' }}>
             {!search && (
               <>
-                <div style={{ padding:'8px 14px 3px', fontSize:9, color:'#3d5470', fontWeight:700, letterSpacing:'1.5px' }}>WATCHLIST ({watchSyms.length})</div>
-                {watchCoins.map(coin => <CoinRow key={`watch-${coin.id}`} coin={coin} selected={selected} onSelect={setSelected} onWatch={toggleWatch} watching coinColor={COIN_COLORS[coin.symbol]} />)}
-                <div style={{ margin:'6px 14px', height:1, background:'rgba(255,255,255,0.05)' }} />
-                <div style={{ padding:'6px 14px 3px', fontSize:9, color:'#3d5470', fontWeight:700, letterSpacing:'1.5px' }}>ALL MARKETS ({otherCoins.length})</div>
-                {otherCoins.map(coin => <CoinRow key={`all-${coin.id}`} coin={coin} selected={selected} onSelect={setSelected} onWatch={toggleWatch} watching={false} coinColor={COIN_COLORS[coin.symbol]} />)}
+                <div style={{ padding: '8px 16px', fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, borderBottom: '1px solid var(--border)', background: '#080808' }}>WATCHLIST_NODES</div>
+                {watchCoins.map(coin => <CoinRow key={coin.id} coin={coin} selected={selected} onSelect={setSelected} onWatch={toggleWatch} watching coinColor={COIN_COLORS[coin.symbol]} />)}
+                
+                <div style={{ padding: '16px 16px 8px', fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, borderBottom: '1px solid var(--border)', background: '#080808', marginTop: 12 }}>CORE_LIQUIDITY</div>
+                {otherCoins.map(coin => <CoinRow key={coin.id} coin={coin} selected={selected} onSelect={setSelected} onWatch={toggleWatch} watching={false} coinColor={COIN_COLORS[coin.symbol]} />)}
               </>
             )}
-            {search && searchResult.map(coin => <CoinRow key={`search-${coin.id}`} coin={coin} selected={selected} onSelect={setSelected} onWatch={toggleWatch} watching={watchSyms.includes(coin.symbol)} coinColor={COIN_COLORS[coin.symbol]} />)}
+            {search && searchResult.map(coin => <CoinRow key={coin.id} coin={coin} selected={selected} onSelect={setSelected} onWatch={toggleWatch} watching={watchSyms.includes(coin.symbol)} coinColor={COIN_COLORS[coin.symbol]} />)}
           </div>
         </div>
 
-        {/* ── CENTER: Chart ────────────────────────────────────────────── */}
-        <div style={{ display:'flex', flexDirection:'column', overflow:'hidden' }}>
-          {/* Coin info bar */}
+        {/* ── CENTER: Tactical Charting ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
           {selected && (
-            <div style={{ padding:'9px 14px', borderBottom:'1px solid #1a2840', display:'flex', alignItems:'center', gap:12, flexWrap:'wrap', background:'#060b14', flexShrink:0 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                <img src={selected.logo} alt={selected.symbol} width={32} height={32} style={{ borderRadius:'50%' }} onError={e => e.target.style.display='none'} />
+            <div className="v4-trading-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 32, height: 32, border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src={selected.logo} alt={selected.symbol} width={24} height={24} style={{ background: '#fff' }} />
+                </div>
                 <div>
-                  <div style={{ fontWeight:800, fontSize:14, color:coinColor }}>{selected.name}</div>
-                  <div style={{ fontSize:9, color:'#3d5470' }}>{selected.symbol}/USDT · #{selected.rank}</div>
+                  <div style={{ fontWeight: 900, fontSize: 18, color: '#fff', letterSpacing: -0.5, fontFamily: 'var(--font-mono)' }}>{selected.symbol}/USDT</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800 }}>{selected.name.toUpperCase()}_NODE</div>
                 </div>
               </div>
-              <div style={{ width:1, height:30, background:'#1a2840', flexShrink:0 }} />
-              <StatPill label="Price"      value={formatCurrency(selected.price)} />
-              <StatPill label="24h Change" value={formatPercent(selected.change24h)} color={chgColor} />
-              <StatPill label="Market Cap" value={formatCurrency(selected.marketCap)} />
-              <StatPill label="24h Volume" value={formatCurrency(selected.volume24h)} />
-              <div style={{ marginLeft:'auto', display:'flex', gap:6 }}>
-                <button onClick={() => toggleWatch(selected.symbol)}
-                  style={{ padding:'5px 10px', borderRadius:6, border:`1px solid ${watchSyms.includes(selected.symbol) ? '#f5a623' : '#1a2840'}`, background: watchSyms.includes(selected.symbol) ? 'rgba(245,166,35,0.1)' : 'transparent', color: watchSyms.includes(selected.symbol) ? '#f5a623' : '#3d5470', fontSize:14, cursor:'pointer', transition:'0.15s' }}>
-                  {watchSyms.includes(selected.symbol) ? '★' : '☆'}
+
+              <div style={{ display: 'flex', gap: 12 }}>
+                <StatPill label="LIVE_PRICE" value={formatCurrency(selected.price)} color="#fff" />
+                <StatPill label="24H_DELTA" value={formatPercent(selected.change24h)} color={chgColor} />
+                <StatPill label="MARKET_CAP" value={formatCurrency(selected.marketCap).split('.')[0]} color="#fff" />
+              </div>
+
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+                <button onClick={() => toggleWatch(selected.symbol)} className={`v4-tactical-action ${watchSyms.includes(selected.symbol) ? 'active' : ''}`}>
+                  {watchSyms.includes(selected.symbol) ? 'UNPIN_NODE' : 'PIN_NODE'}
                 </button>
-                <button onClick={toggleFullscreen} title={fullScreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen Chart'}
-                  style={{ padding:'5px 10px', borderRadius:6, border:'1px solid #1a2840', background: fullScreen ? 'rgba(59,130,246,0.15)' : 'transparent', color: fullScreen ? '#3b82f6' : '#3d5470', fontSize:13, cursor:'pointer', transition:'0.15s' }}>
-                  {fullScreen ? '⊡' : '⛶'}
-                </button>
+                <button onClick={toggleFullscreen} className="v4-tactical-action">⛶_TERMINAL_FOCUS</button>
               </div>
             </div>
           )}
 
-          {/* Chart */}
-          <div style={{ flex:1, overflow:'auto', padding:10 }}>
+          <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
             {selected && (
-              <TradingViewChart
-                key={selected.symbol}
-                symbol={selected.symbol}
-                coinName={selected.name}
+              <ProTradingChart 
+                key={selected.symbol} 
+                symbol={selected.symbol} 
+                coinName={selected.name} 
                 coinColor={coinColor}
+                logo={selected.logo}
               />
             )}
+            <div className="v4-neural-overlay">TERMINAL_v4.2 // FEED_ID: {Math.random().toString(16).slice(2, 8).toUpperCase()}</div>
           </div>
 
-          {/* News compact strip below chart */}
           {!fullScreen && (
-            <div style={{ padding:'8px 12px', borderTop:'1px solid #1a2840', flexShrink:0 }}>
+            <div className="v4-bottom-tape">
               <NewsFeed compact />
             </div>
           )}
         </div>
 
-        {/* ── RIGHT: Tabs panel ───────────────────────────────────────── */}
+        {/* ── RIGHT: Strategic Intel ── */}
         {!fullScreen && selected && (
-          <div style={{ borderLeft:'1px solid #1a2840', display:'flex', flexDirection:'column', overflow:'hidden' }}>
-            {/* Tab bar */}
-            <div style={{ display:'flex', borderBottom:'1px solid #1a2840', background:'#060b14', flexShrink:0 }}>
-              {[['ai','🤖 AI Signal'],['order','📒 Order Book'],['news','📰 News'],['liq','🔥 Liquidations']].map(([v,lbl]) => (
-                <button key={v} onClick={() => setRightPanel(v)}
-                  style={{ flex:1, padding:'9px 4px', border:'none', borderBottom:`2px solid ${rightPanel===v ? coinColor : 'transparent'}`, background:'transparent', color: rightPanel===v ? coinColor : '#3d5470', fontSize:9, fontWeight:700, cursor:'pointer', transition:'0.15s', fontFamily:'inherit' }}>
-                  {lbl}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab content */}
-            <div style={{ flex:1, overflow:'auto' }}>
-              {rightPanel === 'ai'    && <div style={{ padding:10 }}><AIPredictionPanel coin={selected} prices={prices7d} /></div>}
+          <div style={{ borderLeft: '2px solid var(--border)', display: 'flex', flexDirection: 'column', background: '#000' }}>
+            <div className="v4-scroller" style={{ flex: 1, overflowY: 'auto' }}>
+              {rightPanel === 'ai'    && <ExecutionBlade symbol={selected.symbol} currentPrice={selected.price} />}
               {rightPanel === 'order' && <OrderBook symbol={selected.symbol} midPrice={selected.price} />}
-              {rightPanel === 'news'  && <div style={{ padding:'10px 12px' }}><NewsFeed /></div>}
-              {rightPanel === 'liq'   && <div style={{ padding:10 }}><LiquidationMap /></div>}
+              {rightPanel === 'liq'   && <div style={{ padding: 20 }}><AIPredictionPanel coin={selected} prices={prices7d} /></div>}
             </div>
           </div>
         )}
       </div>
+
+      <style>{`
+        .v4-search-wrap { background: #000; border: 2px solid var(--border); display: flex; alignItems: center; padding: 10px 14px; }
+        .v4-search-wrap input { background: transparent; border: none; color: #fff; fontSize: 11px; fontWeight: 900; outline: none; width: 100%; fontFamily: var(--font-mono); }
+        
+        .v4-trading-header { padding: 16px 24px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 32px; background: #000; }
+        
+        .v4-tactical-action { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px 16px; fontSize: 9px; fontWeight: 900; cursor: pointer; transition: 0.1s; fontFamily: var(--font-mono); }
+        .v4-tactical-action:hover { background: #fff; color: #000; }
+        .v4-tactical-action.active { background: #fff; color: #000; }
+
+        .v4-neural-overlay { position: absolute; bottom: 16px; left: 20px; z-index: 10; fontSize: 8px; color: var(--text-dim); fontWeight: 800; fontFamily: var(--font-mono); letterSpacing: 2px; }
+        
+        .v4-bottom-tape { padding: 0; background: #000; border-top: 2px solid var(--border); }
+        .v4-scroller::-webkit-scrollbar { width: 4px; }
+        .v4-scroller::-webkit-scrollbar-thumb { background: var(--border-strong); }
+      `}</style>
     </div>
   );
 }
 
-// ── Coin row sub-component ────────────────────────────────────────────────
-function CoinRow({ coin, selected, onSelect, onWatch, watching, coinColor }) {
-  const up       = coin.change24h >= 0;
+function CoinRow({ coin, selected, onSelect }) {
+  const up = coin.change24h >= 0;
   const isActive = selected?.id === coin.id;
-  const color    = coinColor || '#3b82f6';
+  
   return (
-    <div
-      style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 14px', cursor:'pointer', background: isActive ? `${color}14` : 'transparent', borderLeft:`3px solid ${isActive ? color : 'transparent'}`, transition:'0.12s' }}
-      onClick={() => onSelect(coin)}
-      onMouseEnter={e => { if (!isActive) e.currentTarget.style.background='rgba(255,255,255,0.025)'; }}
-      onMouseLeave={e => { if (!isActive) e.currentTarget.style.background='transparent'; }}>
-      <img src={coin.logo} alt={coin.symbol} width={24} height={24} style={{ borderRadius:'50%', flexShrink:0 }} onError={e => e.target.style.display='none'} />
-      <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontWeight:700, fontSize:11, color: isActive ? color : '#eef2fa' }}>{coin.symbol}</div>
-        <div style={{ fontSize:9, color:'#3d5470', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{coin.name}</div>
+    <div className={`v4-coin-row ${isActive ? 'active' : ''}`} onClick={() => onSelect(coin)}>
+      <div style={{ width: 24, height: 24, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+        <img src={coin.logo} alt={coin.symbol} width={16} height={16} />
       </div>
-      <div style={{ textAlign:'right', flexShrink:0 }}>
-        <div style={{ fontSize:11, fontWeight:600, color:'#eef2fa' }}>{formatCurrency(coin.price)}</div>
-        <div style={{ fontSize:9, fontWeight:700, color: up ? '#00e5b3' : '#f03e55' }}>{up ? '▲' : '▼'}{Math.abs(coin.change24h).toFixed(2)}%</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 900, fontSize: 13, color: '#fff', fontFamily: 'var(--font-mono)', letterSpacing: -0.5 }}>{coin.symbol}</div>
       </div>
-      <button onClick={e => { e.stopPropagation(); onWatch(coin.symbol); }}
-        style={{ background:'none', border:'none', color: watching ? '#f5a623' : '#3d5470', fontSize:12, cursor:'pointer', padding:'0 2px', flexShrink:0, transition:'0.15s' }}>
-        {watching ? '★' : '☆'}
-      </button>
+      <div style={{ textAlign: 'right' }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{formatCurrency(coin.price)}</div>
+        <div style={{ fontSize: 8, fontWeight: 900, color: up ? 'var(--green)' : 'var(--red)', fontFamily: 'var(--font-mono)' }}>{up ? '▲' : '▼'}{Math.abs(coin.change24h).toFixed(2)}%</div>
+      </div>
+
+      <style>{`
+        .v4-coin-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.1s; }
+        .v4-coin-row:hover { background: #080808; }
+        .v4-coin-row.active { background: #fff !important; }
+        .v4-coin-row.active * { color: #000 !important; }
+      `}</style>
     </div>
   );
 }

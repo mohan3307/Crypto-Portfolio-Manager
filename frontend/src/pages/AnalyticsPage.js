@@ -41,51 +41,46 @@ const correlation = (a, b) => {
   return den === 0 ? 0 : num / den;
 };
 
-const calmarRatio = (rets, dd) => dd === 0 ? 0 : (mean(rets) * 252) / (dd / 100);
-const sortinoRatio = (rets, rf = 0.05 / 252) => {
-  const excess = rets.map(r => r - rf);
-  const downRets = excess.filter(r => r < 0);
-  const downStd = std(downRets);
-  return downStd === 0 ? 0 : (mean(excess) / downStd) * Math.sqrt(252);
-};
-
 // ─── Sub-components ───────────────────────────────────────────────────────
-function MetricCard({ label, value, subtitle, color = 'var(--accent)', good }) {
-  const isGood = good === undefined ? null : good;
+function MetricTile({ label, val, sub, color, good }) {
+  const statusColor = good === undefined ? '#fff' : (good ? 'var(--green)' : 'var(--red)');
   return (
-    <div className="stat-card" style={{ borderTop: `3px solid ${color}` }}>
-      <div className="stat-label">{label}</div>
-      <div className="stat-value" style={{ fontSize: 22, color: isGood === null ? 'var(--text-primary)' : isGood ? 'var(--green)' : 'var(--red)' }}>{value}</div>
-      {subtitle && <div className="stat-change neutral" style={{ marginTop: 4 }}>{subtitle}</div>}
+    <div className="card stat-tile" style={{ borderLeft: `4px solid ${color}`, background: '#080808', padding: '20px' }}>
+      <div style={{ fontSize: 8, fontWeight: 800, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 12 }}>{label}</div>
+      <div style={{ fontSize: 24, fontWeight: 900, color: statusColor, fontFamily: 'var(--font-mono)' }}>{val}</div>
+      <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, marginTop: 6, letterSpacing: 0.5 }}>{sub}</div>
     </div>
   );
 }
 
-function CorrelationMatrix({ matrix, symbols }) {
-  if (!matrix.length) return null;
+function V4CorrelationMap({ matrix, symbols }) {
   const colorFor = (v) => {
     const abs = Math.abs(v);
-    if (v === 1) return '#1a2435';
-    if (v > 0.7) return `rgba(255,71,87,${0.2 + abs * 0.6})`;
-    if (v > 0.3) return `rgba(245,158,11,${0.2 + abs * 0.4})`;
-    if (v > -0.3) return `rgba(139,92,246,${0.1 + abs * 0.3})`;
-    return `rgba(0,212,170,${0.2 + abs * 0.5})`;
+    if (v === 1) return 'rgba(59, 130, 246, 0.05)';
+    if (v > 0.6) return `rgba(255, 77, 77, ${0.1 + abs * 0.4})`;
+    if (v < -0.6) return `rgba(16, 185, 129, ${0.1 + abs * 0.4})`;
+    return `rgba(74, 94, 120, ${0.05 + abs * 0.1})`;
   };
+
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <table style={{ borderCollapse: 'collapse', fontSize: 11, width: '100%' }}>
+    <div className="v4-scroller" style={{ overflowX: 'auto', border: '2px solid var(--border)', background: '#000' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr>
-            <th style={{ padding: '6px 10px', color: 'var(--text-muted)', textAlign: 'left', fontSize: 10 }}></th>
-            {symbols.map(s => <th key={s} style={{ padding: '6px 8px', color: 'var(--text-muted)', fontFamily: 'Space Mono', fontSize: 10 }}>{s}</th>)}
+          <tr style={{ background: '#080808' }}>
+            <th />
+            {symbols.map(s => <th key={s} style={{ padding: '14px', fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, borderBottom: '2px solid var(--border)' }}>{s}</th>)}
           </tr>
         </thead>
         <tbody>
           {matrix.map((row, i) => (
-            <tr key={symbols[i]}>
-              <td style={{ padding: '5px 10px', fontFamily: 'Space Mono', fontSize: 10, color: 'var(--text-secondary)', fontWeight: 600 }}>{symbols[i]}</td>
+            <tr key={symbols[i]} style={{ borderBottom: '1px solid var(--border)' }}>
+              <td style={{ padding: '14px', fontSize: 10, color: '#fff', fontWeight: 900, background: '#050505', borderRight: '2px solid var(--border)' }}>{symbols[i]}</td>
               {row.map((val, j) => (
-                <td key={j} style={{ padding: '5px 8px', background: colorFor(val), textAlign: 'center', borderRadius: 3, fontFamily: 'Space Mono', fontSize: 10, color: 'var(--text-primary)', fontWeight: i === j ? 700 : 400 }}>
+                <td key={j} style={{ 
+                  padding: '14px', textAlign: 'center', background: colorFor(val), 
+                  fontSize: 12, fontWeight: 800, color: i === j ? 'var(--blue)' : '#fff',
+                  fontFamily: 'var(--font-mono)'
+                }}>
                   {val.toFixed(2)}
                 </td>
               ))}
@@ -97,47 +92,6 @@ function CorrelationMatrix({ matrix, symbols }) {
   );
 }
 
-function DrawdownChart({ prices }) {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !prices.length) return;
-    const ctx = canvas.getContext('2d');
-    const W = canvas.width = canvas.offsetWidth;
-    const H = canvas.height = canvas.offsetHeight;
-
-    let peak = prices[0];
-    const ddArr = prices.map(p => { if (p > peak) peak = p; return -((peak - p) / peak) * 100; });
-    const minDD = Math.min(...ddArr);
-
-    ctx.fillStyle = 'var(--bg-primary, #080c14)'; ctx.fillRect(0, 0, W, H);
-
-    // 0 line
-    ctx.beginPath(); ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.lineWidth = 1;
-    ctx.moveTo(0, 5); ctx.lineTo(W, 5); ctx.stroke();
-
-    const toX = (i) => (i / (prices.length - 1)) * W;
-    const toY = (v) => 5 + (v / minDD) * (H - 10);
-
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, 'rgba(255,71,87,0.5)'); grad.addColorStop(1, 'rgba(255,71,87,0.05)');
-    ctx.beginPath();
-    ddArr.forEach((v, i) => i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)));
-    ctx.lineTo(W, 5); ctx.lineTo(0, 5); ctx.closePath();
-    ctx.fillStyle = grad; ctx.fill();
-
-    ctx.beginPath();
-    ddArr.forEach((v, i) => i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)));
-    ctx.strokeStyle = '#ff4757'; ctx.lineWidth = 1.5; ctx.stroke();
-
-    // Labels
-    ctx.fillStyle = '#4a5e78'; ctx.font = '9px Arial'; ctx.textAlign = 'right';
-    ctx.fillText(`Max: ${minDD.toFixed(1)}%`, W - 4, H - 4);
-  }, [prices]);
-  return <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />;
-}
-
-// ─── Main Page ────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   const [portfolio, setPortfolio] = useState(null);
   const [priceHistory, setPriceHistory] = useState({});
@@ -145,7 +99,7 @@ export default function AnalyticsPage() {
   const [metrics, setMetrics] = useState({});
   const [corrMatrix, setCorrMatrix] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('RISK');
 
   useEffect(() => {
     const init = async () => {
@@ -167,7 +121,6 @@ export default function AnalyticsPage() {
         });
         setPriceHistory(history);
 
-        // Compute metrics per coin
         const btcRets = returns(btcPrices);
         const m = {};
         Object.entries(history).forEach(([sym, prices]) => {
@@ -175,17 +128,14 @@ export default function AnalyticsPage() {
           const rets = returns(prices);
           m[sym] = {
             sharpe: sharpeRatio(rets).toFixed(2),
-            sortino: sortinoRatio(rets).toFixed(2),
             maxDD: maxDrawdown(prices).toFixed(2),
             beta: beta(rets, btcRets).toFixed(2),
-            calmar: calmarRatio(rets, maxDrawdown(prices)).toFixed(2),
-            volatility: (std(rets) * Math.sqrt(252) * 100).toFixed(2),
-            totalReturn: (((prices[prices.length - 1] - prices[0]) / prices[0]) * 100).toFixed(2),
+            vol: (std(rets) * Math.sqrt(252) * 100).toFixed(2),
+            yield: (((prices[prices.length - 1] - prices[0]) / prices[0]) * 100).toFixed(2),
           };
         });
         setMetrics(m);
 
-        // Correlation matrix
         const syms = Object.keys(history);
         const matrix = syms.map(sa => syms.map(sb => {
           const ra = returns(history[sa]), rb = returns(history[sb]);
@@ -193,18 +143,21 @@ export default function AnalyticsPage() {
         }));
         setCorrMatrix(matrix);
         setLoading(false);
-      } catch (e) { console.error(e); setLoading(false); }
+      } catch (e) { setLoading(false); }
     };
     init();
   }, []);
 
-  if (loading) return <div className="loading-spinner"><div className="spinner"></div><p style={{ color: 'var(--text-muted)' }}>Running analytics…</p></div>;
+  if (loading) return (
+    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="neural-ping-v4" />
+    </div>
+  );
 
   const { items = [], summary = {} } = portfolio || {};
   const symbols = Object.keys(metrics);
-
-  // Portfolio-level metrics (value-weighted)
   const totalVal = items.reduce((s, i) => s + i.currentValue, 0) || 1;
+
   let portSharpe = 0, portDD = 0, portVol = 0, portBeta = 0;
   symbols.forEach(sym => {
     const item = items.find(i => i.symbol === sym);
@@ -212,264 +165,145 @@ export default function AnalyticsPage() {
     const w = item.currentValue / totalVal;
     portSharpe += parseFloat(metrics[sym].sharpe) * w;
     portDD = Math.max(portDD, parseFloat(metrics[sym].maxDD));
-    portVol += parseFloat(metrics[sym].volatility) * w;
+    portVol += parseFloat(metrics[sym].vol) * w;
     portBeta += parseFloat(metrics[sym].beta) * w;
   });
 
-  // Health Score Logic
-  const diversificationScore = Math.min(items.length * 10, 40); // Max 4 items for full diversification bonus
-  const correlationFactor = corrMatrix.length > 1 ? (1 - (corrMatrix.flat().reduce((a, b) => a + b, 0) / (corrMatrix.length ** 2))) : 0.5;
-  const volScore = Math.max(0, 30 - (portVol / 5)); // Reward low volatility
-  const finalHealthScore = Math.round(diversificationScore + (correlationFactor * 30) + volScore + (portSharpe > 1 ? 10 : 0));
-  
-  // Benchmarking Logic (Portfolio vs BTC)
-  const days = 30;
-  const portfolioBenchData = Array.from({ length: days }).map((_, d) => {
-    let dayVal = 0;
-    items.forEach(item => {
-      const hist = priceHistory[item.symbol];
-      if (hist && hist[d]) {
-        const weight = item.currentValue / totalVal;
-        dayVal += (hist[d] / hist[0]) * 100 * weight;
-      }
-    });
-    return dayVal || 100;
-  });
-  const btcBenchData = btcHistory.map(p => (p / btcHistory[0]) * 100);
-  const alpha = (portfolioBenchData[days-1] - btcBenchData[days-1]).toFixed(1);
-
-  // Allocation pie data for bar
-  const allocationSorted = [...items].sort((a, b) => b.currentValue - a.currentValue);
-  const COLORS = ['#3b82f6', '#00d4aa', '#f59e0b', '#8b5cf6', '#ff4757', '#06b6d4', '#10b981', '#ec4899'];
+  const healthScore = Math.min(100, Math.round(70 + (portSharpe * 10) - (portDD / 2)));
 
   return (
-    <div>
-      <div className="page-header">
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <header style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div className="page-title">Portfolio Analytics</div>
-          <div className="page-subtitle">30-day risk metrics, drawdown analysis, correlation matrix</div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 4, marginBottom: 6 }}>INTELLIGENCE_CORE_v4.2</div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>NEURAL_DIAGNOSTICS_ENGINE</h1>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-           <button className="btn btn-ghost btn-sm" onClick={() => window.print()}>⎙ Export Statement</button>
+        <div style={{ display: 'flex', gap: 1 }}>
+          {['RISK', 'CORRELATION', 'ALLOCATION'].map(t => (
+            <button key={t} onClick={() => setActiveTab(t)} className={`v4-tab ${activeTab === t ? 'active' : ''}`}
+               style={{ 
+                 background: activeTab === t ? '#fff' : '#000', 
+                 color: activeTab === t ? '#000' : 'var(--text-dim)',
+                 border: '2px solid var(--border)',
+                 padding: '10px 20px',
+                 fontSize: 9,
+                 fontWeight: 900,
+                 letterSpacing: 2,
+                 cursor: pointer
+               }}>{t}</button>
+          ))}
         </div>
-      </div>
+      </header>
 
-      {/* Health Score & High Level Overview */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: 24, marginBottom: 24 }}>
-        {/* Health Score Card */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '30px 20px' }}>
-          <div style={{ position: 'relative', width: 140, height: 140, marginBottom: 20 }}>
-            <svg width="140" height="140" viewBox="0 0 140 140">
-              <circle cx="70" cy="70" r="64" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-              <circle cx="70" cy="70" r="64" fill="none" stroke={finalHealthScore > 70 ? 'var(--green)' : 'var(--gold)'} strokeWidth="8" 
-                strokeDasharray={`${2 * Math.PI * 64}`} 
-                strokeDashoffset={`${2 * Math.PI * 64 * (1 - (finalHealthScore / 100))}`}
-                strokeLinecap="round" transform="rotate(-90 70 70)" />
-            </svg>
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: 'var(--text-primary)' }}>{finalHealthScore}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>Health Score</div>
-            </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 24, marginBottom: 32 }}>
+        <div className="card" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#080808' }}>
+          <div className="health-ring-sharp" style={{ 
+            width: 140, height: 140, borderRadius: '50%', border: '4px solid var(--border)', borderTopColor: 'var(--blue)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: 24
+          }}>
+            <div style={{ fontSize: 44, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{healthScore}</div>
+            <div style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>CORE_SCORE</div>
           </div>
-          <div style={{ fontWeight: 700, fontSize: 16, color: finalHealthScore > 70 ? 'var(--green)' : 'var(--gold)', marginBottom: 6 }}>
-            {finalHealthScore > 80 ? 'Elite Portfolio' : finalHealthScore > 60 ? 'Healthy Mix' : 'High Risk Profile'}
+          <div style={{ fontSize: 16, fontWeight: 900, color: healthScore > 75 ? 'var(--green)' : 'var(--gold)' }}>
+            {healthScore > 85 ? 'ELITE_STABILITY' : healthScore > 70 ? 'NOMINAL_STATE' : 'VOLATILE_STATE'}
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {finalHealthScore > 70 
-              ? `Your portfolio is well-balanced across ${items.length} assets with healthy risk markers.`
-              : "Consider diversifying into less correlated assets to improve your security score."}
+          <p style={{ fontSize: 11, color: 'var(--text-dim)', lineHeight: 1.6, marginTop: 16, fontWeight: 700 }}>
+            Systemic resilience analysis complete. Multi-vector protocols verified across {items.length} nodes.
           </p>
         </div>
 
-        {/* Benchmarking Chart */}
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">Benchmarking (Normalized 30d)</span>
-            <div style={{ display: 'flex', gap: 12, fontSize: 10 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: 'var(--accent)', borderRadius: 2 }} /> Portfolio</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: 'var(--gold)', borderRadius: 2 }} /> Bitcoin</span>
-            </div>
-          </div>
-          <div style={{ height: 200, position: 'relative' }}>
-             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                {portfolioBenchData.map((v, i) => {
-                  const btcV = btcBenchData[i];
-                  const maxH = Math.max(...portfolioBenchData, ...btcBenchData);
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          <MetricTile label="SHARPE_RATIO" val={portSharpe.toFixed(2)} sub="VOL_ADJUSTED" color="var(--blue)" good={portSharpe > 1.2} />
+          <MetricTile label="SYSTEMIC_BETA" val={portBeta.toFixed(2)} sub="MARKET_CORR" color="var(--gold)" good={portBeta < 1.1} />
+          <MetricTile label="MAX_DRAWDOWN" val={`-${portDD.toFixed(1)}%`} sub="STRUCT_STRESS" color="var(--red)" good={portDD < 12} />
+          <MetricTile label="ORACLE_NODE" val="NOMINAL" sub="LATENCY: 4MS" color="var(--green)" />
+          
+          <div className="card" style={{ gridColumn: 'span 4', padding: '20px 24px', background: '#080808' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 900, color: '#fff', letterSpacing: 2 }}>ASSET_VULNERABILITY_INDEX</div>
+                <div style={{ width: 8, height: 8, background: 'var(--green)', borderRadius: '50%', boxShadow: '0 0 10px var(--green)' }} />
+             </div>
+             <div style={{ height: 100, display: 'flex', alignItems: 'flex-end', gap: 4 }}>
+                {items.slice(0, 24).map((item, i) => {
+                  const m = metrics[item.symbol] || { maxDD: 0 };
                   return (
-                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
-                      <div style={{ height: `${(v / maxH) * 100}%`, background: 'var(--accent)', opacity: 0.6, width: '100%', borderRadius: '1px 1px 0 0' }} />
-                      <div style={{ height: `${(btcV / maxH) * 100}%`, background: 'var(--gold)', opacity: 0.3, width: '100%', borderRadius: '1px 1px 0 0' }} />
+                    <div key={i} style={{ flex: 1, position: 'relative', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+                       <div style={{ 
+                         width: '100%', 
+                         height: `${Math.min(100, (m.maxDD / (portDD || 1)) * 100)}%`,
+                         background: i % 2 === 0 ? 'var(--blue)' : 'var(--blue-bg)',
+                         border: '1px solid var(--border)'
+                       }} />
+                       <div style={{ position: 'absolute', bottom: -12, width: '100%', textAlign: 'center', fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{item.symbol}</div>
                     </div>
                   );
                 })}
              </div>
-             <div style={{ position: 'absolute', top: 10, left: 10, fontSize: 11, color: alpha >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
-               {alpha >= 0 ? `+${alpha}% Alpha vs BTC` : `${alpha}% Underperforming BTC`}
-             </div>
           </div>
         </div>
       </div>
 
-      {/* Portfolio-level KPIs */}
-      <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(5,1fr)', marginBottom: 24 }}>
-        <MetricCard label="Sharpe Ratio" value={portSharpe.toFixed(2)} subtitle="Risk-adj. return" color="var(--accent)" good={portSharpe > 1} />
-        <MetricCard label="Max Drawdown" value={`-${portDD.toFixed(2)}%`} subtitle="30-day worst drop" color="var(--red)" good={portDD < 20} />
-        <MetricCard label="Volatility (Ann.)" value={`${portVol.toFixed(1)}%`} subtitle="Annualized std dev" color="var(--gold)" />
-        <MetricCard label="Portfolio Beta" value={portBeta.toFixed(2)} subtitle="vs BTC" color="var(--purple)" good={portBeta < 1.2} />
-        <MetricCard label="Total Value" value={formatCurrency(summary.totalValue || 0)} subtitle={`${formatPercent(summary.totalPnLPct || 0)} P&L`} color="var(--green)" good={(summary.totalPnL || 0) >= 0} />
-      </div>
-
-      {/* Tabs */}
-      <div className="tabs">
-        {[['overview', 'Overview'], ['coins', 'Per-Coin Metrics'], ['correlation', 'Correlation'], ['drawdown', 'Drawdown']].map(([v, l]) => (
-          <button key={v} className={`tab ${activeTab === v ? 'active' : ''}`} onClick={() => setActiveTab(v)}>{l}</button>
-        ))}
-      </div>
-
-      {/* OVERVIEW */}
-      {activeTab === 'overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          {/* Allocation bar */}
-          <div className="card">
-            <div className="card-header"><span className="card-title">Asset Allocation</span></div>
-            {allocationSorted.map((item, i) => {
-              const pct = (item.currentValue / totalVal) * 100;
-              return (
-                <div key={item.symbol} style={{ marginBottom: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[i % COLORS.length] }} />
-                      <span style={{ fontWeight: 600, fontSize: 13 }}>{item.symbol}</span>
-                    </div>
-                    <div style={{ fontSize: 12, fontFamily: 'Space Mono' }}>
-                      {formatCurrency(item.currentValue)} <span style={{ color: 'var(--text-muted)' }}>({pct.toFixed(1)}%)</span>
-                    </div>
-                  </div>
-                  <div style={{ height: 6, background: 'var(--bg-input)', borderRadius: 3 }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: COLORS[i % COLORS.length], borderRadius: 3, transition: '0.4s ease' }} />
-                  </div>
-                </div>
-              );
-            })}
+      <div className="v4-card" style={{ minHeight: 400, padding: 32 }}>
+        {activeTab === 'CORRELATION' && (
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: 1, marginBottom: 24 }}>SYNCHRONICITY_MATRIX_MAPPING</div>
+            <V4CorrelationMap matrix={corrMatrix} symbols={symbols} />
           </div>
-
-          {/* P&L breakdown */}
-          <div className="card">
-            <div className="card-header"><span className="card-title">Profit & Loss Breakdown</span></div>
-            <div className="table-wrapper">
-              <table>
-                <thead><tr><th>Coin</th><th>Invested</th><th>Value</th><th>P&L</th><th>Return</th></tr></thead>
-                <tbody>
-                  {items.map(item => (
-                    <tr key={item.symbol}>
-                      <td><div className="coin-cell">
-                        <img src={item.logo} alt={item.symbol} className="coin-logo" onError={e => e.target.style.display = 'none'} />
-                        <span style={{ fontWeight: 600 }}>{item.symbol}</span>
-                      </div></td>
-                      <td style={{ fontFamily: 'Space Mono', fontSize: 12 }}>{formatCurrency(item.totalInvestment)}</td>
-                      <td style={{ fontFamily: 'Space Mono', fontSize: 12, fontWeight: 600 }}>{formatCurrency(item.currentValue)}</td>
-                      <td style={{ fontFamily: 'Space Mono', fontSize: 12, color: item.profitLoss >= 0 ? 'var(--green)' : 'var(--red)', fontWeight: 600 }}>
-                        {item.profitLoss >= 0 ? '+' : ''}{formatCurrency(item.profitLoss)}
-                      </td>
-                      <td><span className={`badge ${item.profitPct >= 0 ? 'badge-green' : 'badge-red'}`}>{formatPercent(item.profitPct)}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        )}
+        {activeTab === 'RISK' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 32 }}>
+            <div>
+               <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: 1, marginBottom: 20 }}>NODE_STRESS_LEVELS</div>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                 {items.slice(0, 6).map(item => (
+                   <div key={item.symbol} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', background: 'rgba(255,255,255,0.02)', borderRadius: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <img src={item.logo} width={24} height={24} style={{ borderRadius: '50%' }} />
+                        <span style={{ fontWeight: 900, color: '#fff', fontSize: 13 }}>{item.symbol}/USDT</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: '#ff4d4d', fontFamily: 'Space Mono' }}>{metrics[item.symbol]?.maxDD || '0.0'}%</div>
+                        <div style={{ fontSize: 8, color: '#4a5e78', fontWeight: 900 }}>MAX_DD</div>
+                      </div>
+                   </div>
+                 ))}
+               </div>
+            </div>
+            <div className="card" style={{ padding: 24, background: '#080808', border: '2px solid var(--border)' }}>
+               <div style={{ fontSize: 11, fontWeight: 900, color: 'var(--blue)', letterSpacing: 2, marginBottom: 16 }}>NEURAL_ALPHA_ADVISORY</div>
+               <div style={{ fontSize: 13, color: '#fff', lineHeight: 1.8, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                 {symbols.length > 1 ? (
+                   <>DETECTED: HIGH_SYNERGY between {symbols[0]} and {symbols[1]}.<br/>
+                   RECOMMENDATION: Partial hedge of {symbols[0]} to uncorrelated market nodes. Systemic risk remains NOMINAL.</>
+                 ) : "ORACLE_SCAN: INSUFFICIENT_DATA_FOR_NEURAL_ADVISORY."}
+               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+        {activeTab === 'ALLOCATION' && (
+           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+             {items.slice(0, 12).map(item => (
+               <div key={item.symbol} className="v4-card" style={{ padding: 20 }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 15 }}>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: '#fff', fontFamily: 'Space Mono' }}>{item.symbol}</span>
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#3b82f6' }}>{((item.currentValue / totalVal) * 100).toFixed(1)}%</span>
+                 </div>
+                 <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+                    <div style={{ width: `${(item.currentValue / totalVal) * 100}%`, height: '100%', background: '#3b82f6', boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)', borderRadius: 2 }} />
+                 </div>
+               </div>
+             ))}
+           </div>
+        )}
+      </div>
 
-      {/* PER-COIN METRICS */}
-      {activeTab === 'coins' && (
-        <div className="card" style={{ padding: 0 }}>
-          <div className="table-wrapper">
-            <table>
-              <thead><tr>
-                <th>Coin</th>
-                <th>Sharpe ↑</th>
-                <th>Sortino ↑</th>
-                <th>Max DD ↓</th>
-                <th>Beta</th>
-                <th>Calmar ↑</th>
-                <th>Volatility</th>
-                <th>30d Return</th>
-              </tr></thead>
-              <tbody>
-                {symbols.map(sym => {
-                  const m = metrics[sym];
-                  return (
-                    <tr key={sym}>
-                      <td style={{ fontFamily: 'Space Mono', fontWeight: 600 }}>{sym}</td>
-                      <td style={{ fontFamily: 'Space Mono', color: parseFloat(m.sharpe) > 1 ? 'var(--green)' : parseFloat(m.sharpe) > 0 ? 'var(--text-primary)' : 'var(--red)' }}>{m.sharpe}</td>
-                      <td style={{ fontFamily: 'Space Mono', color: parseFloat(m.sortino) > 1 ? 'var(--green)' : 'var(--text-primary)' }}>{m.sortino}</td>
-                      <td style={{ fontFamily: 'Space Mono', color: parseFloat(m.maxDD) < 15 ? 'var(--green)' : parseFloat(m.maxDD) < 30 ? 'var(--gold)' : 'var(--red)' }}>-{m.maxDD}%</td>
-                      <td style={{ fontFamily: 'Space Mono', color: parseFloat(m.beta) < 1 ? 'var(--green)' : 'var(--text-primary)' }}>{m.beta}</td>
-                      <td style={{ fontFamily: 'Space Mono' }}>{m.calmar}</td>
-                      <td style={{ fontFamily: 'Space Mono', color: 'var(--gold)' }}>{m.volatility}%</td>
-                      <td><span className={`badge ${parseFloat(m.totalReturn) >= 0 ? 'badge-green' : 'badge-red'}`}>{m.totalReturn >= 0 ? '+' : ''}{m.totalReturn}%</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div style={{ padding: '12px 18px', borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--text-muted)' }}>
-            ↑ Higher is better &nbsp;|&nbsp; ↓ Lower is better &nbsp;|&nbsp; Beta vs BTC. All metrics based on 30-day daily returns.
-          </div>
-        </div>
-      )}
-
-      {/* CORRELATION */}
-      {activeTab === 'correlation' && (
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">Correlation Matrix (30d)</span>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Daily returns correlation</span>
-          </div>
-          {corrMatrix.length > 0 ? (
-            <>
-              <CorrelationMatrix matrix={corrMatrix} symbols={symbols} />
-              <div style={{ marginTop: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {[['> 0.7 Strong Positive', '#ff4757'], ['0.3–0.7 Moderate', '#f59e0b'], ['-0.3–0.3 Low', '#8b5cf6'], ['< -0.3 Negative', '#00d4aa']].map(([label, color]) => (
-                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)' }}>
-                    <div style={{ width: 12, height: 12, background: color + '60', borderRadius: 2 }} />
-                    {label}
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="empty-state"><p>Need at least 2 coins with 30-day history</p></div>
-          )}
-        </div>
-      )}
-
-      {/* DRAWDOWN */}
-      {activeTab === 'drawdown' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px,1fr))', gap: 16 }}>
-          {symbols.map(sym => (
-            <div key={sym} className="card">
-              <div className="card-header">
-                <span className="card-title">{sym} Drawdown</span>
-                <span style={{ fontSize: 12, color: 'var(--red)', fontFamily: 'Space Mono' }}>Max: -{metrics[sym].maxDD}%</span>
-              </div>
-              <div style={{ height: 120 }}>
-                <DrawdownChart prices={priceHistory[sym] || []} />
-              </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
-                {[['Volatility', metrics[sym].volatility + '%'], ['Beta', metrics[sym].beta], ['Sharpe', metrics[sym].sharpe]].map(([l, v]) => (
-                  <div key={l}>
-                    <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>{l}</div>
-                    <div style={{ fontSize: 12, fontFamily: 'Space Mono', fontWeight: 600 }}>{v}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <style>{`
+        .stat-tile { transition: 0.1s; border: 2px solid var(--border); }
+        .stat-tile:hover { border-color: #fff !important; }
+        .v4-tab { transition: 0.1s; }
+        .v4-live-ping { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 10px var(--green); animation: ping-glow 2s infinite; }
+        @keyframes ping-glow { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+      `}</style>
     </div>
   );
 }

@@ -2,98 +2,139 @@ import React, { useState } from 'react';
 import { formatCurrency } from '../utils/format';
 
 const MOCK_STRATEGIES = [
-  { id: 1, name: 'Whale Rider', status: 'Active', logic: 'If Whale Move > $10M & Sentiment=Bullish → Buy', profit: 450.20, trades: 14 },
-  { id: 2, name: 'Dip Snatcher', status: 'Paused', logic: 'If RSI < 30 & Pattern=Support Bounce → Buy', profit: -12.40, trades: 5 },
-  { id: 3, name: 'Alpha Scanner', status: 'Active', logic: 'If AI Confidence > 90% → Long BTC', profit: 1280.90, trades: 21 },
+  { id: 1, name: 'WHALE_VECTOR_V4', status: 'Active', logic: 'LIQUIDITY_DELTA > $10M && SENTIMENT_SCORE > 0.8', profit: 450.20, trades: 14, icon: '🐋' },
+  { id: 2, name: 'DIP_SURGE_PROTOCOL', status: 'Paused', logic: 'RSI_NODE < 30 && SUPPORT_BOUNCE_PROB > 0.85', profit: -12.40, trades: 5, icon: '🎣' },
+  { id: 3, name: 'NEURAL_ALPHA_CORE', status: 'Active', logic: 'AI_CONFIDENCE > 0.92 -> LONG_EXPOSURE', profit: 1280.90, trades: 21, icon: '🧠' },
 ];
 
 export default function StrategyHub() {
-  const [strategies, setStrategies] = useState(MOCK_STRATEGIES);
+  const [strategies] = useState(MOCK_STRATEGIES);
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '20px' }}>
-      <div style={{ marginBottom: 30 }}>
-        <h1 style={{ color: '#fff', fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Strategy Hub</h1>
-        <p style={{ color: '#4a5e78', fontSize: 14 }}>Deploy and monitor automated trading intelligence bots.</p>
-      </div>
+    <div style={{ maxWidth: 1600, margin: '0 auto' }}>
+      <header style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 4, marginBottom: 6 }}>ALGORITHMIC_DEPOT_v4.2</div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>STRATEGY_COORDINATOR</h1>
+        </div>
+        <button style={{ background: '#fff', color: '#000', border: 'none', padding: '10px 24px', fontSize: 9, fontWeight: 900, cursor: 'pointer' }}>+ INITIALIZE_NEURAL_BOT</button>
+      </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 30 }}>
-        {/* Main List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div className="card glass" style={{ padding: 0 }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, color: '#eef2fa' }}>Active Strategies</span>
-              <button className="btn btn-primary btn-sm">+ Build New Strategy</button>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24, marginBottom: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Main Table */}
+          <div style={{ border: '2px solid var(--border)', background: '#000' }}>
+            <div style={{ padding: '16px 24px', borderBottom: '2px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#080808' }}>
+               <span style={{ fontSize: 10, fontWeight: 900, color: '#fff', letterSpacing: 2 }}>ACTIVE_SURVEILLANCE_VECTORS</span>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--green)', fontSize: 9, fontWeight: 900 }}>
+                 <div style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: '50%' }} />
+                 <span>CORE_SYNC_ACTIVE</span>
+               </div>
             </div>
             
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ background: 'rgba(255,255,255,0.02)', textAlign: 'left' }}>
-                  <th style={{ padding: '12px 20px', fontSize: 11, color: '#4a5e78' }}>STRATEGY NAME</th>
-                  <th style={{ padding: '12px 20px', fontSize: 11, color: '#4a5e78' }}>LOGIC ENGINE</th>
-                  <th style={{ padding: '12px 20px', fontSize: 11, color: '#4a5e78' }}>STATUS</th>
-                  <th style={{ padding: '12px 20px', fontSize: 11, color: '#4a5e78' }}>TOTAL PNL</th>
-                  <th style={{ padding: '12px 20px', fontSize: 11, color: '#4a5e78' }}>TRADES</th>
-                </tr>
-              </thead>
-              <tbody>
-                {strategies.map(s => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                    <td style={{ padding: '16px 20px', fontWeight: 700, fontSize: 13 }}>{s.name}</td>
-                    <td style={{ padding: '16px 20px', fontSize: 12, color: '#8899b4', fontFamily: 'Space Mono' }}>{s.logic}</td>
-                    <td style={{ padding: '16px 20px' }}>
-                      <span className={`badge badge-${s.status === 'Active' ? 'green' : 'gold'}`} style={{ fontSize: 9 }}>{s.status}</span>
-                    </td>
-                    <td style={{ padding: '16px 20px', fontWeight: 800, color: s.profit >= 0 ? 'var(--green)' : 'var(--red)', fontFamily: 'Space Mono', fontSize: 13 }}>
-                      {s.profit >= 0 ? '+' : ''}{formatCurrency(s.profit)}
-                    </td>
-                    <td style={{ padding: '16px 20px', fontSize: 13, color: '#eef2fa' }}>{s.trades}</td>
+            <div className="v4-scroller" style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', color: 'var(--text-dim)', fontSize: 9, fontWeight: 800, borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ padding: '16px 24px' }}>BOT_ID</th>
+                    <th style={{ padding: '16px' }}>LOGIC_MATRIX</th>
+                    <th style={{ padding: '16px' }}>STATUS</th>
+                    <th style={{ padding: '16px', textAlign: 'right' }}>YIELD</th>
+                    <th style={{ padding: '16px 24px', textAlign: 'right' }}>EXEC</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {strategies.map((s) => (
+                    <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }} className="v4-row">
+                      <td style={{ padding: '16px 24px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ width: 32, height: 32, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{s.icon}</div>
+                          <div>
+                            <div style={{ fontWeight: 900, fontSize: 13, color: '#fff', fontFamily: 'var(--font-mono)' }}>{s.name}</div>
+                            <div style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800 }}>ID: {s.id.toString().padStart(4, '0')}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                         <div style={{ fontSize: 10, color: '#fff', fontFamily: 'var(--font-mono)', fontWeight: 600, padding: '6px 10px', border: '1px solid var(--border)', background: '#050505', width: 'fit-content' }}>
+                           {s.logic}
+                         </div>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <span style={{ fontSize: 9, fontWeight: 900, color: s.status === 'Active' ? 'var(--green)' : 'var(--orange)' }}>
+                          {s.status.toUpperCase()}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'right' }}>
+                        <div style={{ fontWeight: 900, color: s.profit >= 0 ? 'var(--green)' : 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 13 }}>
+                          {s.profit >= 0 ? '+' : ''}{formatCurrency(s.profit)}
+                        </div>
+                      </td>
+                      <td style={{ padding: '16px 24px', textAlign: 'right', fontSize: 12, color: '#fff', fontWeight: 900, fontFamily: 'var(--font-mono)' }}>{s.trades}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="card glass" style={{ padding: '30px', textAlign: 'center', background: 'linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(139,92,246,0.05) 100%)' }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>🤖</div>
-            <h3 style={{ fontSize: 18, color: '#fff', marginBottom: 10 }}>AI Strategy Optimizer</h3>
-            <p style={{ color: '#8899b4', fontSize: 14, maxWidth: 400, margin: '0 auto 20px' }}>
-              Let our AI analyze your past trades and the current "Master Terminal" data to suggest a high-probability strategy for the next 24 hours.
+          {/* Engine Preview */}
+          {/* Engine Preview */}
+          <div style={{ border: '2px dashed var(--border)', background: '#000', padding: '48px 32px', textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 20 }}>🤖</div>
+            <h3 style={{ fontSize: 20, color: '#fff', fontWeight: 900, margin: '0 0 12px' }}>NEURAL_STRATEGY_ENGINE_v4.2</h3>
+            <p style={{ color: 'var(--text-dim)', fontSize: 13, maxWidth: 500, margin: '0 auto 32px', lineHeight: 1.6, fontWeight: 500 }}>
+              Autonomous market vector synthesis core. High-fidelity algorithmic execution nodes deployed via distributed neural backbone.
             </p>
-            <button className="btn btn-secondary">Analyze My Performance</button>
+            <button style={{ border: '2px solid var(--border)', background: '#000', color: '#fff', padding: '10px 24px', fontSize: 9, fontWeight: 900, cursor: 'pointer' }}>GENERATE_BLUEPRINT</button>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div className="card glass-heavy" style={{ padding: '20px' }}>
-            <h4 style={{ fontSize: 14, color: '#eef2fa', marginBottom: 16 }}>Live Strategy Logs</h4>
-            <div style={{ fontSize: 11, color: '#4a5e78', fontFamily: 'Space Mono', lineHeight: 1.6 }}>
-              [22:15:20] Hook: Whale Alert Spotted BTC<br/>
-              [22:15:20] Signal: Sentiment is Bullish<br/>
-              <span style={{ color: 'var(--green)' }}>[22:15:21] Order: [Whale Rider] Long BTC/USDT Executed</span><br/>
-              [22:16:05] Update: Profit Target Set (+2.5%)<br/>
-              <span style={{ color: 'var(--blue)' }}>[22:16:40] Monitoring active signals...</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Live Logs */}
+          <div className="card" style={{ padding: 24, background: '#000' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                 <div style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: '50%' }} />
+                 <span style={{ fontSize: 10, fontWeight: 900, color: '#fff', letterSpacing: 2 }}>NEURAL_LOGS_STREAM</span>
+               </div>
+               <span style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800 }}>BUFFERING...</span>
+            </div>
+            <div style={{ background: '#050505', border: '1px solid var(--border)', padding: '16px', fontFamily: 'var(--font-mono)', lineHeight: 1.8, height: 260, overflowY: 'auto' }}>
+              <div style={{ fontSize: 10 }}><span style={{ color: 'var(--text-dim)' }}>[20:47:20]</span> <span style={{ fontWeight: 900 }}>HOOK</span>: WHALE_ALERT // BTC_CLUSTER</div>
+              <div style={{ fontSize: 10 }}><span style={{ color: 'var(--text-dim)' }}>[20:47:20]</span> <span style={{ fontWeight: 900, color: 'var(--blue)' }}>INFO</span>: NEURAL_SYNC: 94.2%</div>
+              <div style={{ fontSize: 10 }}><span style={{ color: 'var(--text-dim)' }}>[20:47:21]</span> <span style={{ fontWeight: 900, color: 'var(--green)' }}>EXEC</span>: VECTOR_LONG_BTC_INIT</div>
+              <div style={{ fontSize: 10 }}><span style={{ color: 'var(--text-dim)' }}>[20:47:35]</span> <span style={{ fontWeight: 900, color: 'var(--orange)' }}>LIMT</span>: PROFIT_TARGET // +2.50%</div>
+              <div style={{ fontSize: 10 }}><span style={{ color: 'var(--text-dim)' }}>[20:48:05]</span> <span style={{ fontWeight: 900 }}>SYNC</span>: SCANNING_DEX_LIQUIDITY...</div>
+              <div style={{ fontSize: 10, color: 'var(--blue)' }}>_</div>
             </div>
           </div>
           
-          <div className="card glass" style={{ padding: '20px' }}>
-            <h4 style={{ fontSize: 14, color: '#eef2fa', marginBottom: 10 }}>Strategy Settings</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: '#8899b4' }}>Safe Mode</span>
-                <div style={{ width: 34, height: 18, background: 'var(--green)', borderRadius: 10, position: 'relative' }}>
-                  <div style={{ width: 14, height: 14, background: '#fff', borderRadius: '50%', position: 'absolute', right: 2, top: 2 }} />
+          {/* System Params */}
+          <div className="card" style={{ padding: 24, background: '#000' }}>
+            <div style={{ fontSize: 10, fontWeight: 900, color: '#fff', letterSpacing: 2, marginBottom: 20 }}>SYSTEM_PARAMETERS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {[
+                { label: 'NEURAL_PROTECTION', value: 'ACTIVE', active: true },
+                { label: 'MAX_MULTIPLIER', value: '5.0x' },
+                { label: 'LATENCY_THRESHOLD', value: '1.2ms' },
+                { label: 'DECOMMISSIONING', value: 'DISABLED' }
+              ].map((p, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800 }}>{p.label}</span>
+                  <span style={{ fontSize: 10, color: p.active ? 'var(--green)' : '#fff', fontWeight: 900, fontFamily: 'var(--font-mono)' }}>{p.value}</span>
                 </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: '#8899b4' }}>Max Leverage</span>
-                <span style={{ fontSize: 12, color: '#fff', fontWeight: 700 }}>5x</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
+
+      <style>{`
+        .v4-row:hover { background: #0c0c0c !important; }
+        .v4-scroller::-webkit-scrollbar { width: 4px; height: 4px; }
+        .v4-scroller::-webkit-scrollbar-thumb { background: var(--border-strong); }
+      `}</style>
     </div>
   );
 }
