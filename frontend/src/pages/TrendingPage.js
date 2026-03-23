@@ -1,127 +1,138 @@
 import React, { useState, useEffect } from 'react';
-import { getTrending, getChartData } from '../services/api';
-import { formatCurrency, formatPercent } from '../utils/format';
+import { getTrending, getChartData, getListings } from '../services/api';
+import { formatCurrency } from '../utils/format';
 import LiveTradingChart from '../components/Charts/LiveTradingChart';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
+import GlobalStats from '../components/Dashboard/GlobalStats';
 
-const COIN_COLORS = {
-  BTC: '#f7931a', ETH: '#627eea', SOL: '#9945ff', BNB: '#f0b90b',
-  XRP: '#346aa9', DOGE: '#a78bfa', PEPE: '#00cc00', WIF: '#d1d5db'
+const SECTIONS = {
+  gainers: { label: 'Top Gainers', color: '#16c784', icon: '📈' },
+  losers: { label: 'Top Losers', color: '#ea3943', icon: '📉' },
+  traded: { label: 'Most Traded', color: '#3861fb', icon: '🔥' },
 };
 
-function TrendingCoinCard({ coin, rank, sectionColor }) {
-  const [prices, setPrices] = useState([]);
+function TrendingRow({ coin, rank, sectionColor }) {
   const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    if (expanded) {
-      getChartData(coin.symbol, '7d').then(res => setPrices(res.data.data.map(d => d.price))).catch(() => {});
-    }
-  }, [expanded, coin.symbol]);
-
-  const color = COIN_COLORS[coin.symbol] || sectionColor;
+  const [prices, setPrices] = useState([]);
   const isUp = coin.change24h >= 0;
 
+  useEffect(() => {
+    if (expanded && prices.length === 0) {
+      getChartData(coin.symbol, '7d').then(res => setPrices(res.data.data.map(d => d.price))).catch(() => {});
+    }
+  }, [expanded, coin.symbol, prices.length]);
+
   return (
-    <div className="card" style={{ border: '2px solid var(--border)', background: '#080808', cursor: 'pointer', transition: '0.1s' }} onClick={() => setExpanded(e => !e)}>
-      <div style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div style={{ width: 32, height: 32, border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{rank.toString().padStart(2, '0')}</div>
-        <img src={coin.logo} alt={coin.symbol} width={34} height={34} style={{ borderRadius: '2px', background: '#fff' }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 900, fontSize: 16, color: '#fff', letterSpacing: -0.5 }}>{coin.name.toUpperCase()}</div>
-          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: 1 }}>{coin.symbol}/USDT</div>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 900, fontSize: 18, color: '#fff' }}>{formatCurrency(coin.price)}</div>
-          <div style={{ fontSize: 10, fontWeight: 900, color: isUp ? 'var(--green)' : 'var(--red)', marginTop: 4, fontFamily: 'var(--font-mono)' }}>
-            {isUp ? '▲' : '▼'} {Math.abs(coin.change24h).toFixed(2)}%
-          </div>
-        </div>
-        <div style={{ fontSize: 14, color: 'var(--text-dim)', marginLeft: 16 }}>{expanded ? '▲' : '▼'}</div>
-      </div>
-
-
-      {expanded ? (
-        <div style={{ padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-          <div style={{ background: '#000', padding: '24px', border: '2px solid var(--border)' }}>
-            <LiveTradingChart symbol={coin.symbol} coinName={coin.name} color={color} />
-          </div>
-          <AIPredictionPanel coin={coin} prices={prices} />
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: '#050505', borderTop: '2px solid var(--border)' }}>
-          {[
-            { label: 'MARKET_CAP', value: formatCurrency(coin.marketCap) },
-            { label: '24H_VOLUME', value: formatCurrency(coin.volume24h) },
-            { label: '24H_CHANGE', value: formatPercent(coin.change24h), color: isUp ? 'var(--green)' : 'var(--red)' },
-          ].map(({ label, value, color: c }) => (
-            <div key={label} style={{ padding: '12px 24px', borderRight: '1px solid var(--border)' }}>
-              <div style={{ fontSize: 8, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 1.5 }}>{label}</div>
-              <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', fontWeight: 900, marginTop: 4, color: c || '#fff' }}>{value}</div>
+    <>
+      <tr className="v4-row" onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer', borderBottom: '1px solid var(--cmc-border)' }}>
+        <td style={{ padding: '16px 24px', fontSize: 13, color: 'var(--text-muted)', fontWeight: 700 }}>{rank}</td>
+        <td style={{ padding: '16px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img src={coin.logo} width={24} height={24} style={{ borderRadius: '50%', background: '#fff' }} alt="" />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 13, color: '#fff' }}>{coin.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{coin.symbol}</div>
             </div>
-          ))}
-        </div>
+          </div>
+        </td>
+        <td style={{ padding: '16px', textAlign: 'right', fontWeight: 700, color: '#fff', fontSize: 14 }}>{formatCurrency(coin.price)}</td>
+        <td style={{ padding: '16px', textAlign: 'right' }}>
+          <div style={{ color: isUp ? 'var(--cmc-green)' : 'var(--cmc-red)', fontSize: 13, fontWeight: 800 }}>
+             {isUp ? '▲' : '▼'} {Math.abs(coin.change24h).toFixed(2)}%
+          </div>
+        </td>
+        <td style={{ padding: '16px', textAlign: 'right', color: 'var(--text-muted)', fontSize: 13, fontWeight: 600 }}>{formatCurrency(coin.volume24h)}</td>
+        <td style={{ padding: '16px', textAlign: 'right', color: 'var(--text-muted)', fontSize: 13, fontWeight: 600 }}>{formatCurrency(coin.marketCap)}</td>
+        <td style={{ padding: '16px 24px', textAlign: 'right', color: 'var(--text-dim)', fontSize: 11 }}>{expanded ? 'Collapse' : 'Analyze'}</td>
+      </tr>
+      {expanded && (
+        <tr>
+          <td colSpan="7" style={{ padding: '24px', background: 'rgba(255,255,255,0.01)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24 }}>
+               <div style={{ background: 'var(--bg-input)', padding: '20px', borderRadius: 12, border: '1px solid var(--cmc-border)' }}>
+                  <LiveTradingChart symbol={coin.symbol} coinName={coin.name} color={sectionColor} />
+               </div>
+               <AIPredictionPanel coin={coin} prices={prices} />
+            </div>
+          </td>
+        </tr>
       )}
-    </div>
+    </>
   );
 }
 
-const SECTIONS = {
-  gainers: { label: 'TOP_GAINERS', color: '#10b981', icon: '📈' },
-  losers: { label: 'TOP_LOSERS', color: '#ff4d4d', icon: '📉' },
-  traded: { label: 'MOST_TRADED', color: '#3b82f6', icon: '🔥' },
-};
-
 export default function TrendingPage() {
   const [trending, setTrending] = useState(null);
+  const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('gainers');
 
+  const fetchAll = async () => {
+    try {
+      const [t, l] = await Promise.all([getTrending(), getListings()]);
+      setTrending(t.data);
+      setListings(l.data.data);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
   useEffect(() => {
-    getTrending().then(res => { setTrending(res.data); setLoading(false); }).catch(() => setLoading(false));
-    const i = setInterval(() => getTrending().then(res => setTrending(res.data)).catch(() => {}), 30000);
+    fetchAll();
+    const i = setInterval(fetchAll, 30000);
     return () => clearInterval(i);
   }, []);
 
-  if (loading) return (
-    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-       <div style={{ width: 44, height: 44, border: '4px solid var(--border)', borderTopColor: '#fff', borderRadius: '50%', animation: 'v4-spin 1s linear infinite' }} />
-       <style>{`@keyframes v4-spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
-  );
+  if (loading) return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="v4-ping-large" /></div>;
 
-  const coinData = { gainers: trending?.topGainers, losers: trending?.topLosers, traded: trending?.mostTraded };
-  const currentSection = SECTIONS[activeTab];
-  const currentData = coinData[activeTab] || [];
+  const currentData = trending?.[activeTab === 'gainers' ? 'topGainers' : activeTab === 'losers' ? 'topLosers' : 'mostTraded'] || [];
 
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
-      <header style={{ marginBottom: 32, padding: '24px 0', borderBottom: '2px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <GlobalStats listings={listings} />
+
+      <header style={{ margin: '32px 0 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 4, marginBottom: 6 }}>MARKET_MOMENTUM_v4.2</div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>MOMENTUM_RADAR_SCAN</h1>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>MARKET_MOMENTUM</div>
+          <h1 style={{ fontSize: 32, fontWeight: 900, color: '#fff', margin: 0 }}>Momentum Radar</h1>
         </div>
-        <div style={{ display: 'flex', gap: 1 }}>
+        <div style={{ display: 'flex', gap: 12 }}>
           {Object.entries(SECTIONS).map(([key, s]) => (
             <button key={key} onClick={() => setActiveTab(key)} 
               style={{ 
-                background: activeTab === key ? '#fff' : '#000', 
-                color: activeTab === key ? '#000' : 'var(--text-dim)',
-                border: '2px solid var(--border)',
-                padding: '10px 20px', fontSize: 9, fontWeight: 900, letterSpacing: 2
+                 background: activeTab === key ? 'var(--cmc-blue)' : 'var(--bg-card)', 
+                 color: '#fff',
+                 border: `1px solid ${activeTab === key ? 'var(--cmc-blue)' : 'var(--cmc-border)'}`,
+                 padding: '10px 24px', fontSize: 13, fontWeight: 800, borderRadius: 12, cursor: 'pointer'
               }}>{s.label}</button>
           ))}
         </div>
       </header>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {currentData.map((coin, i) => (
-          <TrendingCoinCard key={coin.id || coin.symbol} coin={coin} rank={i + 1} sectionColor={currentSection.color} />
-        ))}
+      <div className="v4-scroller" style={{ background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--cmc-border)', overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ color: 'var(--text-dim)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
+              <th style={{ padding: '16px 24px', textAlign: 'left', borderBottom: '1px solid var(--cmc-border)' }}>#</th>
+              <th style={{ padding: '16px 0', textAlign: 'left', borderBottom: '1px solid var(--cmc-border)' }}>Name</th>
+              <th style={{ padding: '16px', textAlign: 'right', borderBottom: '1px solid var(--cmc-border)' }}>Price</th>
+              <th style={{ padding: '16px', textAlign: 'right', borderBottom: '1px solid var(--cmc-border)' }}>24h %</th>
+              <th style={{ padding: '16px', textAlign: 'right', borderBottom: '1px solid var(--cmc-border)' }}>24h Volume</th>
+              <th style={{ padding: '16px', textAlign: 'right', borderBottom: '1px solid var(--cmc-border)' }}>Market Cap</th>
+              <th style={{ padding: '16px 24px', textAlign: 'right', borderBottom: '1px solid var(--cmc-border)' }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentData.map((coin, i) => (
+              <TrendingRow key={coin.symbol} coin={coin} rank={i + 1} sectionColor={SECTIONS[activeTab].color} />
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <style>{`
-        .card:hover { border-color: #fff !important; z-index: 10; }
+        .v4-row:hover { background: var(--bg-card-hover) !important; }
+        .v4-scroller::-webkit-scrollbar { width: 4px; }
+        .v4-scroller::-webkit-scrollbar-thumb { background: var(--cmc-border); }
       `}</style>
     </div>
   );

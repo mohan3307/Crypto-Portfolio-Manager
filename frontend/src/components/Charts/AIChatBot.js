@@ -99,29 +99,28 @@ function ChatMessage({ msg }) {
       alignItems: 'flex-start',
     }}>
       <div style={{
-        width: 36, height: 36, borderRadius: 12, flexShrink: 0,
-        background: isUser ? 'linear-gradient(135deg,#3b82f6,#8b5cf6)' : 'linear-gradient(135deg,#10b981,#059669)',
+        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+        background: isUser ? 'var(--cmc-blue)' : 'var(--cmc-green)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 16, border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: isUser ? '0 0 20px rgba(59,130,246,0.3)' : '0 0 20px rgba(16,185,129,0.3)'
+        boxShadow: isUser ? '0 4px 12px rgba(56, 97, 251, 0.3)' : '0 4px 12px rgba(22, 199, 132, 0.3)'
       }}>
         {isUser ? '👤' : '🧠'}
       </div>
       <div style={{
-        maxWidth: '82%', padding: '14px 18px', borderRadius: isUser ? '20px 4px 20px 20px' : '4px 20px 20px 20px',
-        background: isUser ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-        border: `1px solid ${isUser ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)'}`,
-        fontSize: 13, color: '#fff', lineHeight: 1.6, whiteSpace: 'pre-line',
-        backdropFilter: 'blur(20px) saturate(210%)',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+        maxWidth: '82%', padding: '12px 16px', borderRadius: isUser ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+        background: isUser ? 'rgba(56, 97, 251, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+        border: `1px solid ${isUser ? 'rgba(56, 97, 251, 0.2)' : 'rgba(255, 255, 255, 0.1)'}`,
+        fontSize: 13, color: '#fff', lineHeight: 1.5, whiteSpace: 'pre-line',
+        backdropFilter: 'blur(10px)',
       }}>
         <div style={{ position: 'relative' }}>
           {msg.text}
           <div style={{ 
-            fontSize: 9, color: '#4a5e78', marginTop: 10, textAlign: isUser ? 'right' : 'left', 
-            fontWeight: 900, fontFamily: 'Space Mono', letterSpacing: 0.5 
+            fontSize: 9, color: 'var(--text-muted)', marginTop: 8, textAlign: isUser ? 'right' : 'left', 
+            fontWeight: 700 
           }}>
-            [{msg.role.toUpperCase()}_LOG_ENTRY // {msg.time}]
+            {msg.time}
           </div>
         </div>
       </div>
@@ -194,53 +193,53 @@ export default function AIChatBot() {
         title="NEURAL_ADVISOR"
         style={{
           position: 'fixed', bottom: 32, right: 32, zIndex: 9999,
-          width: 64, height: 64, borderRadius: 20,
-          background: 'linear-gradient(135deg,#00b0ff,#8b5cf6)',
-          boxShadow: '0 10px 40px rgba(59,130,246,0.4)',
+          width: 60, height: 60, borderRadius: '50%',
+          background: 'var(--cmc-blue)',
+          boxShadow: '0 8px 24px rgba(56, 97, 251, 0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 26, transition: '0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          cursor: 'pointer', fontSize: 26, transition: '0.3s cubic-bezier(0.16, 1, 0.3, 1)',
           border: '1px solid rgba(255,255,255,0.2)'
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)'; e.currentTarget.style.boxShadow = '0 15px 50px rgba(59,130,246,0.6)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(59,130,246,0.4)'; }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
       >
         {open ? '✕' : '🧠'}
       </div>
 
       {open && (
         <div className="glass-heavy neural-chat-terminal" style={{
-          position: 'fixed', bottom: 112, right: 32, zIndex: 9998,
-          width: minimized ? 300 : 420, height: minimized ? 64 : 640,
-          borderRadius: 32, overflow: 'hidden',
+          position: 'fixed', bottom: 104, right: 32, zIndex: 9998,
+          width: minimized ? 280 : 380, height: minimized ? 56 : 580,
+          borderRadius: 20, overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
-          transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-          border: '1px solid rgba(59, 130, 246, 0.2)',
-          boxShadow: '0 40px 100px rgba(0,0,0,0.8)'
+          transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          border: '1px solid var(--cmc-border)',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.6)'
         }}>
           {/* Header */}
           <div style={{
-            padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 15,
-            background: 'rgba(0,0,0,0.2)',
-            borderBottom: '1px solid rgba(255,255,255,0.03)', flexShrink: 0
+            padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12,
+            background: 'var(--bg-input)',
+            borderBottom: '1px solid var(--cmc-border)', flexShrink: 0
           }}>
             <div style={{ 
-                width: 40, height: 40, borderRadius: 12, 
-                background: 'linear-gradient(135deg,#10b981,#059669)', 
+                width: 32, height: 32, borderRadius: '50%', 
+                background: 'var(--cmc-green)', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                fontSize: 20, boxShadow: '0 0 15px rgba(16,185,129,0.3)' 
+                fontSize: 16 
             }}>🤖</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 900, fontSize: 13, color: '#fff', letterSpacing: 1.5 }}>NOVA-7 // NEURAL_ADVISOR</div>
-              <div style={{ fontSize: 9, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 900 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', boxShadow: '0 0 8px var(--green)', display: 'inline-block' }} />
-                SYNCHRONIZED_ACTIVE
+              <div style={{ fontWeight: 800, fontSize: 13, color: '#fff' }}>Nova-7 Advisor</div>
+              <div style={{ fontSize: 10, color: 'var(--cmc-green)', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cmc-green)' }} />
+                Synchronized
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => setMinimized(m => !m)} style={{ background: 'rgba(255,255,255,0.03)', border: 'none', color: '#4a5e78', cursor: 'pointer', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setMinimized(m => !m)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 13 }}>
                 {minimized ? '⤢' : '⤡'}
               </button>
-              <button onClick={() => setMessages([messages[0]])} style={{ background: 'rgba(255,82,82,0.05)', border: 'none', color: 'var(--red)', cursor: 'pointer', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => setMessages([messages[0]])} style={{ background: 'none', border: 'none', color: 'var(--cmc-red)', cursor: 'pointer', fontSize: 13 }}>
                 🗑
               </button>
             </div>

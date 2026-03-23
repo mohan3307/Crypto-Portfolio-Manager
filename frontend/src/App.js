@@ -28,6 +28,15 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import ComparePage from './pages/ComparePage';
 import StrategyHub from './pages/StrategyHub';
 import RoadmapHub from './pages/RoadmapHub';
+import CoinPage from './pages/CoinPage';
+import ExchangesPage from './pages/ExchangesPage';
+import CategoriesPage from './pages/CategoriesPage';
+import CommunityPage from './pages/CommunityPage';
+import NewsPage from './pages/NewsPage';
+import NFTPage from './pages/NFTPage';
+import GainersLosersPage from './pages/GainersLosersPage';
+import CalendarPage from './pages/CalendarPage';
+
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -72,6 +81,15 @@ function App() {
                     <Route path="alerts" element={<AlertsPage />} />
                     <Route path="strategy" element={<StrategyHub />} />
                     <Route path="roadmap" element={<RoadmapHub />} />
+                    <Route path="exchanges" element={<ExchangesPage />} />
+                    <Route path="categories" element={<CategoriesPage />} />
+                    <Route path="community" element={<CommunityPage />} />
+                    <Route path="news" element={<NewsPage />} />
+                    <Route path="nfts" element={<NFTPage />} />
+                    <Route path="volatility" element={<GainersLosersPage />} />
+                    <Route path="calendar" element={<CalendarPage />} />
+                    <Route path="coin/:id" element={<CoinPage />} />
+
                     <Route path="profile" element={<ProfilePage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/dashboard" />} />

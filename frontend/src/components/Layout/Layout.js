@@ -20,12 +20,31 @@ const Icons = {
   Profile:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
   Strategy:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>,
   Roadmap:   () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M9 18l6-6-6-6"/></svg>,
+  Exchanges: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 2L2 7h20z"/></svg>,
+  Categories:() => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
+  Community: () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>,
+  News:      () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="2" y1="10" x2="22" y2="10"/></svg>,
+  NFTs:      () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+  Volatility:() => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+  Calendar:  () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
 };
 
 const NAV = [
   { section: 'PRIME', items: [{ path: '/dashboard', label: 'MISSION_CONTROL', icon: 'Dashboard' }] },
   { section: 'DIAGNOSTICS', items: [{ path: '/portfolio', label: 'ASSET_VAULT', icon: 'Portfolio' }, { path: '/analytics', label: 'INTELLIGENCE', icon: 'Analytics' }] },
-  { section: 'SURVEILLANCE', items: [{ path: '/market', label: 'LIQUIDITY_MAP', icon: 'Market' }, { path: '/compare', label: 'NODE_COMPARE', icon: 'Compare' }, { path: '/watchlist', label: 'PRIORITY_LIST', icon: 'Watchlist' }] },
+  { section: 'SURVEILLANCE', items: [
+      { path: '/market', label: 'LIQUIDITY_MAP', icon: 'Market' }, 
+      { path: '/exchanges', label: 'EXCHANGE_INDEX', icon: 'Exchanges' },
+      { path: '/categories', label: 'ECOSYSTEM_SEGMENT', icon: 'Categories' },
+      { path: '/community', label: 'COMMUNITY_HUB', icon: 'Community' },
+      { path: '/news', label: 'INTEL_STREAM', icon: 'News' },
+      { path: '/nfts', label: 'COLLECTIBLE_INDEX', icon: 'NFTs' },
+      { path: '/volatility', label: 'VOLATILITY_ENGINE', icon: 'Volatility' },
+      { path: '/calendar', label: 'PROTOCOL_EVENTS', icon: 'Calendar' },
+      { path: '/compare', label: 'NODE_COMPARE', icon: 'Compare' }, 
+      { path: '/watchlist', label: 'PRIORITY_LIST', icon: 'Watchlist' }
+    ] 
+  },
   { section: 'EXECUTION', items: [{ path: '/trading', label: 'LIVE_TERMINAL', icon: 'Trading' }, { path: '/paper', label: 'SIM_PROTOCOL', icon: 'Paper' }, { path: '/strategy', label: 'ALGO_WORKSPACE', icon: 'Strategy' }] },
   { section: 'PROTOCOL', items: [{ path: '/roadmap', label: 'EVOLUTION_MAP', icon: 'Roadmap' }, { path: '/alerts', label: 'THREAT_LOGS', icon: 'Alerts' }, { path: '/profile', label: 'IDENTITY_CORE', icon: 'Profile' }] },
 ];
@@ -35,7 +54,9 @@ const TITLES = {
   '/market': 'LIQUIDITY_MAP', '/compare': 'NODE_DIAGNOSTICS', '/watchlist': 'PRIORITY_SURVEILLANCE',
   '/trending': 'MOMENTUM_RADAR', '/trading': 'LIVE_EXECUTION', '/paper': 'SIMULATION_TERMINAL',
   '/alerts': 'THREAT_MONITOR', '/profile': 'IDENTITY_CORE', '/strategy': 'ALGORITHM_DEPOT',
-  '/roadmap': 'EVOLUTION_BLUEPRINT',
+  '/roadmap': 'EVOLUTION_BLUEPRINT', '/exchanges': 'EXCHANGE_DATABASE', '/categories': 'ECOSYSTEM_SEGMENTS',
+  '/community': 'COMMUNITY_NETWORK', '/news': 'LATEST_INTELLIGENCE', '/nfts': 'NFT_REGISTRY', 
+  '/volatility': 'HIGH_VOLATILITY_ENGINE', '/calendar': 'EVENT_CHRONOLOGY',
 };
 
 export default function Layout() {
@@ -107,7 +128,7 @@ export default function Layout() {
         </aside>
 
         {/* ── Main Content ── */}
-        <main className="v4-main">
+        <div className="v4-main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
           <header className="v4-topbar">
             <div className="v4-topbar-left">
               <div className="v4-page-title">{title}</div>
@@ -125,16 +146,16 @@ export default function Layout() {
             </div>
           </header>
 
-          <div className={isTradingPage ? 'v4-content-full' : 'v4-content-padded'}>
+          <main className={isTradingPage ? 'v4-content-full' : 'v4-content-padded'} style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
             <Outlet />
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
 
       <CommandPalette isOpen={cmdOpen} onClose={setCmdOpen} />
 
       <style>{`
-        .v4-layout-container { display: flex; flex-direction: column; height: 100vh; background: #000; color: #fff; overflow: hidden; font-family: var(--font-mono); }
+        .v4-layout-container { display: flex; flex-direction: row; height: calc(100vh - 28px); width: 100vw; background: #000; color: #fff; overflow: hidden; font-family: var(--font-mono); }
         
         .v4-sidebar { width: 240px; background: #070707; border-right: 2px solid var(--border); display: flex; flex-direction: column; }
         .v4-sidebar-header { padding: 24px; border-bottom: 2px solid var(--border); }

@@ -19,7 +19,7 @@ export const MarketProvider = ({ children }) => {
       setListings(res.data.data);
       setLastUpdated(res.data.lastUpdated);
       const priceMap = {};
-      res.data.data.forEach(coin => { priceMap[coin.symbol] = coin.price; });
+      (res.data.data || []).forEach(coin => { priceMap[coin.symbol] = coin.price; });
       setPrices(priceMap);
     }).catch(console.error);
 
@@ -28,11 +28,11 @@ export const MarketProvider = ({ children }) => {
     setSocket(newSocket);
 
     newSocket.on('priceUpdate', (data) => {
-      setListings(data.data);
+      setListings(data.data || []);
       setLastUpdated(data.lastUpdated);
       
       const priceMap = {};
-      data.data.forEach(coin => {
+      (data.data || []).forEach(coin => {
         priceMap[coin.symbol] = coin.price;
       });
       setPrices(priceMap);

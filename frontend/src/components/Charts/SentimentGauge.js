@@ -65,7 +65,7 @@ export default function SentimentGauge() {
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
           <span style={{ color: '#4a5e78' }}>LATEST SIGNAL</span>
           <span style={{ color: lastSignal.type === 'Bullish' ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>
-            {lastSignal.coin}: {lastSignal.type.toUpperCase()}
+            {lastSignal.coin}: {(lastSignal.type || '').toUpperCase()}
           </span>
         </div>
       </div>

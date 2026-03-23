@@ -27,113 +27,73 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="v4-auth-container">
-      {/* Dynamic Neural Background */}
-      <div className="v4-neural-bg">
-        <div className="v4-aura a1" />
-        <div className="v4-aura a2" />
-        <div className="v4-aura a3" />
-      </div>
-
-      <div className="v4-auth-card">
-        <div className="v4-auth-header">
-          <div style={{ width: 60, height: 60, background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 900, margin: '0 auto 24px' }}>⬡</div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>CRYPTONOVA_TERMINAL</h1>
-          <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 900, letterSpacing: 4, marginTop: 8 }}>NEURAL_GATEWAY_V4.2</div>
+    <div className="register-page">
+      <div className="auth-card glass animate-in">
+        <div className="auth-header">
+          <div className="logo-symbol">⬡</div>
+          <h1>Create Account</h1>
+          <p>Join the CryptoNova Trading Network</p>
         </div>
 
-        {error && (
-          <div className="v4-error-box">
-             <span className="v4-error-tag">PROCESS_ERR:</span> {error.toUpperCase()}
-          </div>
-        )}
+        {error && <div className="form-error">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="v4-auth-form">
-          <div className="v4-form-field">
-            <label>PERSONNEL_NAME</label>
-            <div className="v4-input-wrap">
-               <input 
-                type="text" placeholder="OPERATOR_NAME"
-                value={form.name} onChange={e => setForm({...form, name: e.target.value})} required 
+        <form onSubmit={handleSubmit} className="auth-form">
+          <div className="form-group">
+            <label className="form-label">Full Name</label>
+            <input 
+              className="form-input"
+              type="text" placeholder="John Doe"
+              value={form.name} onChange={e => setForm({...form, name: e.target.value})} required 
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Email Address</label>
+            <input 
+              className="form-input"
+              type="email" placeholder="name@company.com"
+              value={form.email} onChange={e => setForm({...form, email: e.target.value})} required 
+            />
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input 
+                className="form-input"
+                type="password" placeholder="••••••••"
+                value={form.password} onChange={e => setForm({...form, password: e.target.value})} required 
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Confirm</label>
+              <input 
+                className="form-input"
+                type="password" placeholder="••••••••"
+                value={form.confirm} onChange={e => setForm({...form, confirm: e.target.value})} required 
               />
             </div>
           </div>
 
-          <div className="v4-form-field">
-            <label>AUTHORITY_IDENTIFIER</label>
-            <div className="v4-input-wrap">
-               <input 
-                type="email" placeholder="ACCESS_ID@PROTOCOL.SYS"
-                value={form.email} onChange={e => setForm({...form, email: e.target.value})} required 
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            <div className="v4-form-field">
-              <label>SECRET_KEY</label>
-              <div className="v4-input-wrap">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder="••••••••"
-                  value={form.password} onChange={e => setForm({...form, password: e.target.value})} required 
-                />
-              </div>
-            </div>
-            <div className="v4-form-field">
-              <label>VERIFY_KEY</label>
-              <div className="v4-input-wrap">
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  placeholder="••••••••"
-                  value={form.confirm} onChange={e => setForm({...form, confirm: e.target.value})} required 
-                />
-              </div>
-            </div>
-          </div>
-
-          <button className="v4-auth-btn pulse-main" type="submit" disabled={loading}>
-            {loading ? 'INITIALIZING_CLUSTER...' : 'INITIALIZE_COMMAND_CORE'}
+          <button className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '10px' }} type="submit" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
-        <div className="v4-auth-footer">
-          ALREADY ENROLLED? <Link to="/login">BRIDGE_ACCESS</Link>
+        <div className="auth-footer">
+          Already have an account? <Link to="/login">Sign in</Link>
         </div>
       </div>
 
       <style>{`
-        .v4-auth-container { min-height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); position: relative; overflow: hidden; padding: 40px 20px; }
-        
-        .v4-neural-bg { position: absolute; inset: 0; z-index: 1; overflow: hidden; opacity: 0.6; pointer-events: none; }
-        .v4-aura { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; animation: v4-aura-drift 15s infinite alternate; }
-        .a1 { width: 600px; height: 600px; background: radial-gradient(circle, #3b82f6 0%, transparent 70%); top: -100px; left: -100px; }
-        .a2 { width: 500px; height: 500px; background: radial-gradient(circle, #8b5cf6 0%, transparent 70%); bottom: -50px; right: -50px; animation-duration: 20s; }
-        .a3 { width: 400px; height: 400px; background: radial-gradient(circle, #10b981 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-duration: 25s; }
-
-        @keyframes v4-aura-drift {
-          from { transform: translate(0, 0) scale(1); }
-          to { transform: translate(5%, 5%) scale(1.1); }
-        }
-
-        .v4-auth-card { width: 100%; maxWidth: 480px; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); padding: 60px 48px; border: 2px solid var(--border); position: relative; z-index: 10; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        
-        .v4-auth-header { text-align: center; margin-bottom: 48px; }
-        
-        .v4-error-box { background: #000; border: 1px solid var(--red); padding: 16px; color: var(--red); font-size: 11px; font-weight: 900; margin-bottom: 32px; letter-spacing: 0.5px; border-radius: 2px; }
-        
-        .v4-auth-form { display: flex; flex-direction: column; gap: 24px; }
-        .v4-form-field label { display: block; font-size: 9px; font-weight: 900; color: var(--text-dim); letter-spacing: 2.5px; margin-bottom: 12px; }
-        .v4-input-wrap input { width: 100%; background: #000; border: 1px solid var(--border-strong); padding: 14px 20px; color: #fff; font-size: 14px; font-weight: 900; outline: none; border-radius: 2px; transition: 0.1s; }
-        .v4-input-wrap input:focus { border-color: #fff; background: #080808; }
-
-        .v4-auth-btn { background: #fff; border: 1px solid #fff; color: #000; padding: 18px; font-size: 11px; font-weight: 900; letter-spacing: 2px; cursor: pointer; transition: 0.1s; margin-top: 20px; border-radius: 2px; }
-        .v4-auth-btn:hover { background: #000; color: #fff; }
-        .v4-auth-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .v4-auth-footer { text-align: center; margin-top: 48px; font-size: 10px; color: var(--text-dim); font-weight: 900; letter-spacing: 1px; }
-        .v4-auth-footer a { color: #fff; text-decoration: none; margin-left: 10px; font-weight: 900; text-transform: uppercase; border-bottom: 1px solid #fff; }
-        .v4-auth-footer a:hover { opacity: 0.7; }
+        .register-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top left, #0a101f, #000); position: relative; padding: 40px 20px; }
+        .auth-card { width: 100%; max-width: 460px; padding: 40px; border-radius: 12px; }
+        .auth-header { text-align: center; margin-bottom: 30px; }
+        .logo-symbol { font-size: 32px; background: var(--accent); color: #fff; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border-radius: 10px; }
+        .auth-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 5px; color: #fff; }
+        .auth-header p { color: var(--text-muted); font-size: 14px; }
+        .auth-footer { margin-top: 25px; text-align: center; font-size: 14px; color: var(--text-muted); }
+        .auth-footer a { color: var(--accent); font-weight: 600; text-decoration: none; }
       `}</style>
     </div>
   );

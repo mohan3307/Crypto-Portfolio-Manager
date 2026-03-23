@@ -56,11 +56,11 @@ export default function WhaleAlert() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 15, marginTop: 16, padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: 12 }}>
          <div>
             <div style={{ fontSize: 8, color: '#4a5e78', fontWeight: 900, marginBottom: 2 }}>ORIGIN</div>
-            <div style={{ fontSize: 10, color: 'var(--blue)', fontWeight: 800, fontFamily: 'Space Mono' }}>{current.from.toUpperCase()}</div>
+            <div style={{ fontSize: 10, color: 'var(--blue)', fontWeight: 800, fontFamily: 'Space Mono' }}>{(current.from || '').toUpperCase()}</div>
          </div>
          <div>
             <div style={{ fontSize: 8, color: '#4a5e78', fontWeight: 900, marginBottom: 2 }}>DESTINATION</div>
-            <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 800, fontFamily: 'Space Mono' }}>{current.to.toUpperCase()}</div>
+            <div style={{ fontSize: 10, color: 'var(--gold)', fontWeight: 800, fontFamily: 'Space Mono' }}>{(current.to || '').toUpperCase()}</div>
          </div>
       </div>
 

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { useMarket } from '../../context/MarketContext';
 
 const fmt = (n, d = 2) => {

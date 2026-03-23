@@ -20,6 +20,9 @@ import NeuralForecastingHub from '../components/Dashboard/NeuralForecastingHub';
 import StrategyBacktester from '../components/Dashboard/StrategyBacktester';
 import WhaleFlowMap from '../components/Dashboard/WhaleFlowMap';
 import SectorDecomposition from '../components/Dashboard/SectorDecomposition';
+import GlobalStats from '../components/Dashboard/GlobalStats';
+import SpotlightCards from '../components/Dashboard/SpotlightCards';
+
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
@@ -31,12 +34,12 @@ const donutOptions = {
 };
 
 function StatCard({ label, val, sub, cls }) {
-  const accent = cls === 'red' ? 'var(--red)' : cls === 'green' ? 'var(--green)' : '#fff';
+  const accent = cls === 'red' ? 'var(--cmc-red)' : cls === 'green' ? 'var(--cmc-green)' : '#fff';
   return (
-    <div className="card" style={{ padding: '20px', background: '#000', border: '2px solid var(--border)' }}>
-      <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2, marginBottom: 12 }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)', letterSpacing: -1 }}>{val}</div>
-      <div style={{ fontSize: 9, color: accent, fontWeight: 900, marginTop: 8, letterSpacing: 1, fontFamily: 'var(--font-mono)' }}>{sub}</div>
+    <div className="stat-card">
+      <div className="stat-label">{label}</div>
+      <div className="stat-value">{val}</div>
+      <div className="stat-change" style={{ color: accent }}>{sub}</div>
     </div>
   );
 }
@@ -70,8 +73,9 @@ export default function DashboardPage() {
     </div>
   );
 
-  const { summary, items } = portfolio || { summary: { totalValue: 0, totalInvested: 0, totalPnL: 0, totalPnLPct: 0 }, items: [] };
-  const sortedItems = [...items].sort((a, b) => b.currentValue - a.currentValue);
+  const { summary, items = [] } = portfolio || { summary: { totalValue: 0, totalInvested: 0, totalPnL: 0, totalPnLPct: 0 }, items: [] };
+  const [hideBalance, setHideBalance] = useState(false);
+  const sortedItems = [...(items || [])].sort((a, b) => (b.currentValue || 0) - (a.currentValue || 0));
 
   const allocationData = {
     labels: sortedItems.slice(0, 7).map(i => i.symbol),
@@ -83,10 +87,10 @@ export default function DashboardPage() {
     datasets: [{ 
       label: 'BTC_VECTOR', 
       data: btcChart.map(d => d.price), 
-      borderColor: '#fff', 
-      backgroundColor: 'transparent', 
-      fill: false, 
-      tension: 0, 
+      borderColor: 'var(--cmc-blue)', 
+      backgroundColor: 'rgba(56, 97, 251, 0.1)', 
+      fill: true, 
+      tension: 0.4, 
       pointRadius: 0, 
       borderWidth: 2 
     }]
@@ -95,148 +99,182 @@ export default function DashboardPage() {
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       
-      <header className="v4-dashboard-header">
+      <GlobalStats listings={listings} />
+
+      <header className="v4-dashboard-header" style={{ padding: '32px 0 24px', borderBottom: 'none', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ width: 40, height: 40, background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 900 }}>CMD</div>
+          <div style={{ width: 48, height: 48, background: 'var(--cmc-blue)', color: '#fff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontWeight: 900, boxShadow: '0 8px 16px rgba(56,97,251,0.2)' }}>CN</div>
           <div>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1 }}>TACTICAL_COMMAND_CENTRAL</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <div style={{ width: 6, height: 6, background: 'var(--green)', borderRadius: '50%' }} />
-              <div style={{ fontSize: 9, color: 'var(--green)', fontWeight: 900, letterSpacing: 2 }}>NEURAL_ENGINE_ACTIVE_v4.2</div>
+            <h1 style={{ fontSize: 32, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: -1, fontFamily: 'var(--font-display)' }}>PORTFOLIO_DASHBOARD</h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
+              <div className="live-badge">
+                <div className="live-dot" />
+                ASSET_MONITORING_ACTIVE
+              </div>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>PRIVATE_NODE_v4.2</span>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 12 }}>
-          {['TACTICAL', 'ANALYTICS'].map(mode => (
-            <button key={mode} onClick={() => setWorkspace(mode)} className={`v4-mode-btn ${workspace === mode ? 'active' : ''}`}>{mode}_SURVEILLANCE</button>
-          ))}
+        <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => setWorkspace('TACTICAL')} className={`v4-mode-btn ${workspace === 'TACTICAL' ? 'active' : ''}`} style={{ borderRadius: '8px' }}>TACTICAL</button>
+            <button onClick={() => setWorkspace('ANALYTICS')} className={`v4-mode-btn ${workspace === 'ANALYTICS' ? 'active' : ''}`} style={{ borderRadius: '8px' }}>ANALYTICS</button>
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 380px', gap: 40, marginBottom: 40 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 400px', gap: 32, marginBottom: 40 }}>
         
         {/* Main Feed */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-            <StatCard label="TACTICAL_EQUITY" val={formatCurrency(summary.totalValue)} sub={`${formatPercent(summary.totalPnLPct)} 24H_CHG`} cls="blue" />
-            <StatCard label="ALLOCATED_POOL" val={formatCurrency(summary.totalInvested)} sub={`${items.length} ACTIVE_NODES`} cls="green" />
-            <StatCard label="GROSS_DIFF" val={formatCurrency(summary.totalPnL)} sub="REALTIME_SYNC" cls={summary.totalPnL >= 0 ? 'green' : 'red'} />
-            <StatCard label="NEURAL_SCAN" val="12.4%_CONF" sub="BULLISH_BIAS" cls="gold" />
+          <div className="card" style={{ padding: '32px', background: 'linear-gradient(135deg, var(--bg-card), var(--bg-void))' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)', fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+                  CURRENT_BALANCE <span style={{ cursor: 'pointer' }} onClick={() => setHideBalance(!hideBalance)}>{hideBalance ? '👁️' : '🕶️'}</span>
+                </div>
+                <div style={{ fontSize: 48, fontWeight: 900, color: '#fff', letterSpacing: -1 }}>
+                  {hideBalance ? '••••••••' : formatCurrency(summary.totalValue)}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                  <span style={{ color: 'var(--cmc-green)', fontSize: 18, fontWeight: 800 }}>+{formatCurrency(summary.totalPnL)}</span>
+                  <span style={{ background: 'var(--green-bg)', color: 'var(--cmc-green)', padding: '2px 8px', borderRadius: 6, fontSize: 13, fontWeight: 700 }}>
+                    {formatPercent(summary.totalPnLPct)} (24h)
+                  </span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button className="btn-primary" style={{ padding: '12px 24px', borderRadius: 12 }}>+ ADD NEW</button>
+                <button className="btn-ghost" style={{ padding: '12px 24px', borderRadius: 12 }}>TRANSFER</button>
+              </div>
+            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 24 }}>
-            <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                  <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2 }}>BENCHMARK_TELEMETRY // BTC_7D</div>
-                  <div style={{ fontSize: 9, color: '#fff', fontWeight: 900 }}>LIVE_FEED</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32 }}>
+            <div className="card" style={{ padding: 28 }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24, alignItems: 'center' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 4, height: 16, background: 'var(--cmc-blue)', borderRadius: 2 }} />
+                    BALANCE_PERFORMANCE_VECTOR
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {['1D', '7D', '1M', '1Y', 'ALL'].map(tf => <button key={tf} style={{ fontSize: 10, padding: '4px 8px', borderRadius: 6, background: tf === '7D' ? 'var(--cmc-blue)' : 'var(--bg-input)', color: '#fff', border: 'none' }}>{tf}</button>)}
+                  </div>
                </div>
-               <div style={{ height: 280 }}>
+               <div style={{ height: 320 }}>
                  <Line data={lineData} options={{ 
                     responsive: true, maintainAspectRatio: false, 
                     plugins: { legend: { display: false } },
                     scales: { 
-                      x: { grid: { display: false }, ticks: { color: 'var(--text-dim)', font: { size: 9, family: 'var(--font-mono)' } } },
-                      y: { grid: { color: 'rgba(255,255,255,0.05)', borderDash: [2, 2] }, ticks: { color: 'var(--text-dim)', font: { size: 9, family: 'var(--font-mono)' } } }
+                      x: { grid: { display: false }, ticks: { color: 'var(--text-muted)', font: { size: 10, family: 'var(--font-mono)' } } },
+                      y: { grid: { color: 'rgba(255,255,255,0.03)', borderDash: [4, 4] }, border: { display: false }, ticks: { color: 'var(--text-muted)', font: { size: 10, family: 'var(--font-mono)' } } }
                     }
                  }} />
                </div>
             </div>
-            <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
-               <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 20 }}>ORDER_BOOK_DENSITY</div>
-               <OrderBookDepth />
-            </div>
           </div>
 
           {workspace === 'TACTICAL' ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24 }}>
-                  <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
-                       <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2 }}>NEURAL_VECTOR_SCANNER</div>
-                       <div style={{ fontSize: 8, padding: '2px 6px', border: '1px solid #fff', color: '#fff' }}>OPTIMIZED</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: 32 }}>
+                  <div className="card" style={{ padding: 28 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
+                       <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ width: 4, height: 16, background: 'var(--cmc-red)', borderRadius: 2 }} />
+                          NEURAL_VECTOR_SCANNER
+                       </div>
+                       <div className="badge-blue">QUANT_ENGINE_V4</div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                       {[
-                        { type: 'SIGNAL', msg: 'BTC/USDT: Bullish Momentum detected on 4H TF', val: '88%_CONF' },
-                        { type: 'WHALE', msg: '2,500 BTC ($185M) inflow from unknown cluster', val: 'CRITICAL' },
-                        { type: 'ALPHA', msg: 'Institutional RSI divergence identified on ETH/BTC', val: 'DETECTED' }
+                        { type: 'SIGNAL', msg: 'BTC/USDT: Bullish Momentum detected on 4H TF', val: '88%_CONF', color: 'var(--cmc-blue)' },
+                        { type: 'WHALE', msg: '2,500 BTC ($185M) inflow from unknown cluster', val: 'CRITICAL', color: 'var(--cmc-red)' },
+                        { type: 'ALPHA', msg: 'Institutional RSI divergence identified on ETH/BTC', val: 'DETECTED', color: 'var(--cmc-green)' }
                       ].map((evt, i) => (
-                        <div key={i} className="v4-event-row" style={{ border: 'none', background: '#080808', borderBottom: '1px solid var(--border)' }}>
-                          <span style={{ fontSize: 13, color: '#fff', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{evt.msg}</span>
-                          <span style={{ fontSize: 9, fontFamily: 'var(--font-mono)', color: 'var(--text-dim)', fontWeight: 900 }}>{evt.val}</span>
+                        <div key={i} className="v4-event-row" style={{ border: 'none', background: 'transparent', borderBottom: '1px solid var(--border-glow)', padding: '16px 0' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: 14, color: '#fff', fontWeight: 600 }}>{evt.msg}</span>
+                            <span style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 4 }}>{new Date().toLocaleTimeString()} • {evt.type}</span>
+                          </div>
+                          <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: evt.color, fontWeight: 900 }}>{evt.val}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                     <PredictiveGlance />
-                     <SentimentGauge />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+                     <div className="card"><PredictiveGlance /></div>
+                     <div className="card"><SentimentGauge /></div>
                   </div>
                </div>
-               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-                  <WhaleFlowMap />
-                  <StrategyBacktester />
-                  <EconomicCalendar />
+               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 32 }}>
+                  <div className="card"><WhaleFlowMap /></div>
+                  <div className="card"><StrategyBacktester /></div>
+                  <div className="card"><EconomicCalendar /></div>
                </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
-                  <NeuralForecastingHub />
-                  <MacroBarometer />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 32 }}>
+                  <div className="card"><NeuralForecastingHub /></div>
+                  <div className="card"><MacroBarometer /></div>
                </div>
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                  <CorrelationMatrix />
-                  <SectorDecomposition />
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                   <div className="card"><CorrelationMatrix /></div>
+                   <div className="card"><SectorDecomposition /></div>
                </div>
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-            <RiskTelemetry />
-            <AITrendScanner />
-            <RiskCalculator />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 31 }}>
+             <div className="card"><RiskTelemetry /></div>
+             <div className="card"><AITrendScanner /></div>
+             <div className="card"><RiskCalculator /></div>
           </div>
         </div>
 
         {/* Tactical Side Panels */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-           <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
-              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, textAlign: 'center', marginBottom: 24 }}>LIQUIDITY_ALLOCATION</div>
-              <div style={{ height: 240, position: 'relative' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+           <div className="card" style={{ padding: 28 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, textAlign: 'center', marginBottom: 32 }}>LIQUIDITY_DENSITY_ALLOCATION</div>
+              <div style={{ height: 260, position: 'relative' }}>
                  <Doughnut data={allocationData} options={donutOptions} />
                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                    <div style={{ fontSize: 9, color: 'var(--text-dim)', fontWeight: 800, letterSpacing: 2 }}>ACTIVE_NODES</div>
-                    <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{items.length}</div>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: 1 }}>NODES</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{items.length}</div>
                  </div>
               </div>
            </div>
 
-           <OnChainFeed />
+           <div className="card-cmc"><OnChainFeed /></div>
 
-           <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)' }}>
-              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 20 }}>TOP_ALPHA_GAINERS</div>
+           <div className="card" style={{ padding: 28 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>TOP_ALPHA_GAINERS</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {trending?.topGainers?.slice(0, 6).map((c, i) => (
-                  <div key={i} className="v4-trending-row" style={{ background: '#080808', border: 'none', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                       <img src={c.logo} width={18} height={18} alt="" style={{ borderRadius: '2px', background: '#fff' }} />
-                       <span style={{ fontSize: 12, fontWeight: 900, color: '#fff', fontFamily: 'var(--font-mono)' }}>{c.symbol}</span>
+                  <div key={i} className="v4-trending-row" style={{ background: 'transparent', border: 'none', borderBottom: '1px solid var(--border-glow)', padding: '14px 0' }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                       <img src={c.logo} width={22} height={22} alt="" style={{ borderRadius: '50%', background: '#fff' }} />
+                       <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{c.symbol}</span>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>TOP_{i+1}</span>
+                       </div>
                     </div>
-                    <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 900, fontFamily: 'var(--font-mono)' }}>+{c.change24h.toFixed(2)}%</span>
+                    <span style={{ fontSize: 12, color: 'var(--cmc-green)', fontWeight: 800 }}>+{c.change24h.toFixed(2)}%</span>
                   </div>
                 ))}
               </div>
+              <button style={{ width: '100%', marginTop: 24, padding: '12px', background: 'var(--bg-input)', border: '1px solid var(--border-glow)', borderRadius: 8, color: 'var(--cmc-blue)', fontSize: 11, fontWeight: 800 }}>VIEW_FULL_INTELLIGENCE</button>
            </div>
 
-           <div className="card" style={{ padding: 24, background: '#000', border: '2px solid var(--border)', textAlign: 'center' }}>
-              <div style={{ fontSize: 10, fontWeight: 900, color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 20 }}>FEAR_GREED_SURVEILLANCE</div>
+           <div className="card" style={{ padding: 28, textAlign: 'center' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 24 }}>FEAR_GREED_SURVEILLANCE</div>
               <FearGreedGauge />
            </div>
+
+           <div className="card"><OrderBookDepth /></div>
         </div>
       </div>
+
 
       <style>{`
         .v4-dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding: 24px 0; border-bottom: 2px solid var(--border); }
