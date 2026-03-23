@@ -46,13 +46,14 @@ function StatCard({ label, val, sub, cls }) {
 
 export default function DashboardPage() {
   const { listings } = useMarket();
+  const navigate = useNavigate();
   const [portfolio, setPortfolio] = useState(null);
   const [trending, setTrending] = useState([]);
   const [showCommand, setShowCommand] = useState(false);
   const [workspace, setWorkspace] = useState('TACTICAL');
   const [loading, setLoading] = useState(true);
   const [btcChart, setBtcChart] = useState([]);
-  const navigate = useNavigate();
+  const [hideBalance, setHideBalance] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -74,7 +75,6 @@ export default function DashboardPage() {
   );
 
   const { summary, items = [] } = portfolio || { summary: { totalValue: 0, totalInvested: 0, totalPnL: 0, totalPnLPct: 0 }, items: [] };
-  const [hideBalance, setHideBalance] = useState(false);
   const sortedItems = [...(items || [])].sort((a, b) => (b.currentValue || 0) - (a.currentValue || 0));
 
   const allocationData = {
