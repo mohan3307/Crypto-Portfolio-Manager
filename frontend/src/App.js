@@ -36,6 +36,7 @@ import NewsPage from './pages/NewsPage';
 import NFTPage from './pages/NFTPage';
 import GainersLosersPage from './pages/GainersLosersPage';
 import CalendarPage from './pages/CalendarPage';
+import AIPredictionPage from './pages/AIPredictionPage';
 
 
 const ProtectedRoute = ({ children }) => {
@@ -88,6 +89,7 @@ function App() {
                     <Route path="nfts" element={<NFTPage />} />
                     <Route path="volatility" element={<GainersLosersPage />} />
                     <Route path="calendar" element={<CalendarPage />} />
+                    <Route path="ai-predictions" element={<AIPredictionPage />} />
                     <Route path="coin/:id" element={<CoinPage />} />
 
                     <Route path="profile" element={<ProfilePage />} />

@@ -554,3 +554,72 @@ exports.getChartData = async (req, res) => {
 };
 
 exports.getPriceDirect = () => priceCache;
+
+// --- New CMC Features Endpoints ---
+
+exports.getExchanges = async (req, res) => {
+  try {
+    // In a real app, this would use the CMC /exchange/listings/latest endpoint
+    const exchanges = [
+      { id: 270, rank: 1, name: 'Binance', score: 9.9, volume24h: 12453219800, liquidity: 854, weeklyVisits: 14200000, markets: 1420, coins: 382, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/270.png' },
+      { id: 89, rank: 2, name: 'Coinbase Exchange', score: 8.6, volume24h: 2453219000, liquidity: 720, weeklyVisits: 2100000, markets: 532, coins: 240, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/89.png' },
+      { id: 521, rank: 3, name: 'Bybit', score: 7.4, volume24h: 4219870000, liquidity: 680, weeklyVisits: 3400000, markets: 820, coins: 410, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/521.png' },
+      { id: 294, rank: 4, name: 'OKX', score: 7.2, volume24h: 3876540000, liquidity: 640, weeklyVisits: 2800000, markets: 740, coins: 350, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/294.png' },
+      { id: 24, rank: 5, name: 'Kraken', score: 7.1, volume24h: 876540000, liquidity: 630, weeklyVisits: 1200000, markets: 620, coins: 210, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/24.png' },
+    ];
+    res.json({ data: exchanges });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getCategories = async (req, res) => {
+  try {
+    const categories = [
+      { id: 'memes', name: 'Memes', marketCap: 52400000000, change24h: 12.5, topCoins: ['DOGE', 'SHIB', 'PEPE'] },
+      { id: 'solana-eco', name: 'Solana Ecosystem', marketCap: 124000000000, change24h: 5.2, topCoins: ['SOL', 'JUP', 'PYTH'] },
+      { id: 'ai', name: 'AI & Big Data', marketCap: 38000000000, change24h: 8.9, topCoins: ['RNDR', 'FET', 'NEAR'] },
+      { id: 'defi', name: 'DeFi', marketCap: 104000000000, change24h: -1.2, topCoins: ['AAVE', 'UNI', 'LDO'] },
+    ];
+    res.json({ data: categories });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getNewsFeed = async (req, res) => {
+  try {
+    const news = [
+      { id: 1, source: 'Decrypt', title: 'Bitcoin ETFs See Record Inflows', time: '1h ago', category: 'Bitcoin', img: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png' },
+      { id: 2, source: 'CoinDesk', title: 'Ethereum Foundation Update', time: '3h ago', category: 'Ethereum', img: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png' },
+      { id: 3, source: 'The Block', title: 'Solana DEX Volume Flips ETH', time: '6h ago', category: 'Solana', img: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png' },
+    ];
+    res.json({ data: news });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getNFTs = async (req, res) => {
+  try {
+    const nfts = [
+      { rank: 1, name: 'Bored Ape Yacht Club', volume: 15432, sales: 24, floorPrice: 12.5, mcap: 125000, owners: 5400 },
+      { rank: 2, name: 'Mutant Ape Yacht Club', volume: 8432, sales: 45, floorPrice: 2.1, mcap: 45000, owners: 12000 },
+    ];
+    res.json({ data: nfts });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getCalendarEvents = async (req, res) => {
+  try {
+    const calendar = [
+      { id: 1, type: 'ICO', project: 'NeuralLink Coin', date: 'In 2 Days', goal: '$2.5M', stage: 'Public Sale', status: 'Upcoming' },
+      { id: 2, type: 'AIRDROP', project: 'ZkSync Era', date: 'TBA 2024', goal: '100M Tokens', stage: 'Snapshot', status: 'Ongoing' },
+    ];
+    res.json({ data: calendar });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getCommunityFeed = async (req, res) => {
+  try {
+    const feeds = [
+      { id: 1, author: 'Vitalik Buterin', handle: '@VitalikButerin', content: 'The shift to L2 is progressing faster than anticipated.', time: '2h ago', likes: '12K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png' },
+      { id: 2, author: 'Satoshi Nakamoto', handle: '@Satoshi', content: 'I am not Dorian Nakamoto. I am the Ghost in the machine.', time: '5h ago', likes: '8K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png' },
+    ];
+    res.json({ data: feeds });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};

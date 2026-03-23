@@ -1040,3 +1040,39 @@ input[type=range]::-webkit-slider-thumb:hover {
 .text-terminal { color: #fff !important; font-family: var(--font-mono) !important; }
 .text-terminal-dim { color: var(--text-dim) !important; font-family: var(--font-mono) !important; }
 
+/* ═══════════════════════════════════════════════════════
+   CMC V4.2 PARITY MODULES
+═══════════════════════════════════════════════════════ */
+.v4-stats-container {
+  display: flex; gap: 24px; padding: 12px 24px;
+  background: #050505; border-bottom: 2px solid var(--border);
+  font-size: 11px; font-weight: 800; overflow-x: auto;
+  white-space: nowrap; font-family: var(--font-mono);
+}
+.v4-stats-node { display: flex; gap: 8px; align-items: center; color: var(--text-dim); }
+.v4-stats-node span:last-child { color: var(--cmc-blue); font-weight: 900; }
+
+.v4-pro-table { width: 100%; border-collapse: collapse; }
+.v4-pro-table th { 
+  padding: 12px 16px; text-align: left; 
+  color: var(--text-dim); font-size: 9px; 
+  font-weight: 950; text-transform: uppercase; 
+  letter-spacing: 1.5px; border-bottom: 2px solid var(--border); 
+}
+.v4-pro-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+
+.v4-badge-gradient {
+  padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 900;
+  background: var(--bg-card); border: 1px solid var(--cmc-border);
+  color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.2);
+}
+
+.v4-row-active { background: rgba(56, 97, 251, 0.05) !important; border-left: 2px solid var(--cmc-blue); }
+
+@keyframes v4-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.v4-loader-node {
+  width: 32px; height: 32px; border: 3px solid var(--border);
+  border-top-color: var(--cmc-blue); border-radius: 50%;
+  animation: v4-spin 0.8s linear infinite;
+}
+

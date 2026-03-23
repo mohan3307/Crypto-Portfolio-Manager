@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import GlobalStats from '../components/Dashboard/GlobalStats';
-import { getListings } from '../services/api';
-
-const CALENDAR = [
-  { id: 1, type: 'ICO', project: 'NeuralLink Coin', date: 'In 2 Days', goal: '$2.5M', stage: 'Public Sale', status: 'Upcoming' },
-  { id: 2, type: 'AIRDROP', project: 'ZkSync Era', date: 'TBA 2024', goal: '100M Tokens', stage: 'Snapshot Phase', status: 'Ongoing' },
-  { id: 3, type: 'ICO', project: 'Solana Mobile V2', date: 'In 5 Days', goal: '$500K', stage: 'Presale', status: 'Upcoming' },
-  { id: 4, type: 'EVENT', project: 'Bitcoin Halving', date: 'April 2024', goal: 'Block 840,000', stage: 'Protocol Event', status: 'Countdown' },
-];
+import { getListings, getCalendar } from '../services/api';
 
 export default function CalendarPage() {
   const [listings, setListings] = useState([]);
+  const [calendar, setCalendar] = useState([]);
 
   useEffect(() => {
-    getListings().then(res => setListings(res.data.data));
+    Promise.all([getListings(), getCalendar()])
+      .then(([lRes, cRes]) => {
+        setListings(lRes.data.data);
+        setCalendar(cRes.data.data);
+      });
   }, []);
 
   return (
@@ -38,7 +34,7 @@ export default function CalendarPage() {
             </tr>
           </thead>
           <tbody>
-            {CALENDAR.map((ev) => (
+            {calendar.map((ev) => (
               <tr key={ev.id} className="v4-row" style={{ borderBottom: '1px solid var(--cmc-border)' }}>
                 <td style={{ padding: '16px 24px' }}>
                     <span style={{ 

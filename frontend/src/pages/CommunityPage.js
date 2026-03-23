@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import GlobalStats from '../components/Dashboard/GlobalStats';
-import { getListings } from '../services/api';
-
-const FEEDS = [
-  { id: 1, author: 'Vitalik Buterin', handle: '@VitalikButerin', content: 'The shift to L2 is progressing faster than anticipated. Data availability is the next bottleneck.', time: '2h ago', likes: '12K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png' },
-  { id: 2, author: 'CryptoWhale', handle: '@WhaleWatcher', content: 'Whale alert: 50,000 BTC moved from unknown wallet to Binance. Potential sell-off incoming.', time: '5h ago', likes: '8K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png' },
-  { id: 3, author: 'Solana Foundation', handle: '@Solana', content: 'Mainnet-beta performance is nominal. 65,000 TPS sustained with zero downtime in the last 24h.', time: '8h ago', likes: '15K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png' },
-  { id: 4, author: 'CZ Binance', handle: '@cz_binance', content: 'SAFU. We are constantly monitoring the liquidity vectors to ensure user safety.', time: '1d ago', likes: '45K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png' },
-];
+import { getListings, getCommunity } from '../services/api';
 
 export default function CommunityPage() {
   const [listings, setListings] = useState([]);
+  const [feeds, setFeeds] = useState([]);
 
   useEffect(() => {
-    getListings().then(res => setListings(res.data.data));
+    Promise.all([getListings(), getCommunity()])
+      .then(([lRes, fRes]) => {
+        setListings(lRes.data.data);
+        setFeeds(fRes.data.data);
+      });
   }, []);
 
   return (
@@ -26,7 +22,7 @@ export default function CommunityPage() {
       </header>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {FEEDS.map(post => (
+        {feeds.map(post => (
           <div key={post.id} className="card-cmc" style={{ padding: 32, borderRadius: 20 }}>
             <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
               <img src={post.logo} width={48} height={48} style={{ borderRadius: '50%', background: '#fff' }} alt="" />

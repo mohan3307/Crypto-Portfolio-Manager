@@ -1,24 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { getListings } from '../services/api';
+import { getListings, getCategories } from '../services/api';
 import { formatCurrency } from '../utils/format';
 import GlobalStats from '../components/Dashboard/GlobalStats';
 
-const CATEGORIES = [
-  { rank: 1, name: 'Memes', mcap: 62453219800, change24h: 12.5, topCoins: ['DOGE', 'SHIB', 'PEPE'] },
-  { rank: 2, name: 'Solana Ecosystem', mcap: 145321900000, change24h: 8.6, topCoins: ['SOL', 'JUP', 'WIF'] },
-  { rank: 3, name: 'AI & Big Data', mcap: 32198700000, change24h: 5.4, topCoins: ['FET', 'RENDER', 'GRT'] },
-  { rank: 4, name: 'DeFi', mcap: 87654000000, change24h: -2.2, topCoins: ['UNI', 'LINK', 'AAVE'] },
-  { rank: 5, name: 'Gaming', mcap: 18765400000, change24h: 4.1, topCoins: ['IMX', 'BEAM', 'GALA'] },
-  { rank: 6, name: 'Layer 1', mcap: 1219870000000, change24h: 1.8, topCoins: ['BTC', 'ETH', 'SOL'] },
-  { rank: 7, name: 'Layer 2', mcap: 24532190000, change24h: 3.2, topCoins: ['ARB', 'OP', 'MATIC'] },
-];
-
 export default function CategoriesPage() {
   const [listings, setListings] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getListings().then(res => setListings(res.data.data)).finally(() => setLoading(false));
+    Promise.all([getListings(), getCategories()])
+      .then(([lRes, cRes]) => {
+        setListings(lRes.data.data);
+        setCategories(cRes.data.data);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="v4-ping-large" /></div>;
@@ -44,13 +39,13 @@ export default function CategoriesPage() {
             </tr>
           </thead>
           <tbody>
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat, idx) => (
               <tr key={cat.name} className="v4-row" style={{ borderBottom: '1px solid var(--cmc-border)' }}>
-                <td style={{ padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 700 }}>{cat.rank}</td>
+                <td style={{ padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 700 }}>{cat.rank || idx + 1}</td>
                 <td style={{ padding: '16px' }}>
                   <div style={{ fontWeight: 800, color: '#fff', fontSize: 15 }}>{cat.name}</div>
                 </td>
-                <td style={{ padding: '16px', textAlign: 'right', fontWeight: 700, color: '#fff' }}>{formatCurrency(cat.mcap)}</td>
+                <td style={{ padding: '16px', textAlign: 'right', fontWeight: 700, color: '#fff' }}>{formatCurrency(cat.marketCap)}</td>
                 <td style={{ padding: '16px', textAlign: 'right' }}>
                    <div style={{ color: cat.change24h >= 0 ? 'var(--cmc-green)' : 'var(--cmc-red)', fontWeight: 800, fontSize: 14 }}>
                       {cat.change24h >= 0 ? '▲' : '▼'} {Math.abs(cat.change24h).toFixed(2)}%

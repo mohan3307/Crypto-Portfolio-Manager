@@ -1,25 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { getListings } from '../services/api';
+import { getListings, getExchanges } from '../services/api';
 import { formatCurrency } from '../utils/format';
 import GlobalStats from '../components/Dashboard/GlobalStats';
 
-const EXCHANGES = [
-  { rank: 1, name: 'Binance', score: 9.9, volume24h: 12453219800, liquidity: 854, weeklyVisits: 14200000, markets: 1420, coins: 382, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/270.png' },
-  { rank: 2, name: 'Coinbase Exchange', score: 8.6, volume24h: 2453219000, liquidity: 720, weeklyVisits: 2100000, markets: 532, coins: 240, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/89.png' },
-  { rank: 3, name: 'Bybit', score: 7.4, volume24h: 4219870000, liquidity: 680, weeklyVisits: 3400000, markets: 820, coins: 410, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/521.png' },
-  { rank: 4, name: 'OKX', score: 7.2, volume24h: 3876540000, liquidity: 640, weeklyVisits: 2800000, markets: 740, coins: 350, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/294.png' },
-  { rank: 5, name: 'Kraken', score: 7.1, volume24h: 876540000, liquidity: 630, weeklyVisits: 1200000, markets: 620, coins: 210, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/24.png' },
-  { rank: 6, name: 'KuCoin', score: 6.8, volume24h: 1219870000, liquidity: 590, weeklyVisits: 1800000, markets: 1100, coins: 740, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/311.png' },
-  { rank: 7, name: 'Gate.io', score: 6.5, volume24h: 987654000, liquidity: 550, weeklyVisits: 1500000, markets: 2400, coins: 1600, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/302.png' },
-  { rank: 8, name: 'Bitstamp', score: 6.4, volume24h: 219876000, liquidity: 540, weeklyVisits: 450000, markets: 180, coins: 82, logo: 'https://s2.coinmarketcap.com/static/img/exchanges/64x64/70.png' },
-];
-
 export default function ExchangesPage() {
   const [listings, setListings] = useState([]);
+  const [exchanges, setExchanges] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getListings().then(res => setListings(res.data.data)).finally(() => setLoading(false));
+    Promise.all([getListings(), getExchanges()])
+      .then(([lRes, eRes]) => {
+        setListings(lRes.data.data);
+        setExchanges(eRes.data.data);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="v4-ping-large" /></div>;
@@ -48,7 +42,7 @@ export default function ExchangesPage() {
             </tr>
           </thead>
           <tbody>
-            {EXCHANGES.map((ex) => (
+            {exchanges.map((ex) => (
               <tr key={ex.name} className="v4-row" style={{ borderBottom: '1px solid var(--cmc-border)' }}>
                 <td style={{ padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 700 }}>{ex.rank}</td>
                 <td style={{ padding: '16px' }}>

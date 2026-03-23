@@ -41,6 +41,8 @@ API.interceptors.response.use(
 export const login = (data) => API.post("/auth/login", data);
 export const register = (data) => API.post("/auth/register", data);
 export const getMe = () => API.get("/auth/me");
+export const askAI = (data) => API.post("/ai/ask", data);
+export const getAIPredictions = () => API.get("/ai/predictions");
 
 
 // ================= MARKET =================
@@ -50,6 +52,13 @@ export const getPrices = (symbols) =>
   API.get(`/market/prices${symbols ? `?symbols=${symbols}` : ""}`);
 export const getChartData = (symbol, timeframe) =>
   API.get(`/market/chart/${symbol}/${timeframe}`);
+
+export const getExchanges = () => API.get("/market/exchanges");
+export const getCategories = () => API.get("/market/categories");
+export const getNews = () => API.get("/market/news/feed");
+export const getNFTs = () => API.get("/market/nfts/top");
+export const getCalendar = () => API.get("/market/calendar/events");
+export const getCommunity = () => API.get("/market/community/feed");
 
 
 // ================= PORTFOLIO =================

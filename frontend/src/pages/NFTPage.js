@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { getListings } from '../services/api';
-import { formatCurrency } from '../utils/format';
-import GlobalStats from '../components/Dashboard/GlobalStats';
-
-const NFTS = [
-  { rank: 1, name: 'Bored Ape Yacht Club', volume: 15432, sales: 24, floorPrice: 12.5, mcap: 125000, owners: 5400, logo: 'https://i.seadn.io/gae/Ju9Cqy-mHCzhM97W_VDe63U7T_uSOfu6_L_q7k8u9L9W-T5S-r0U6c-U_c6-c6?auto=format&w=256' },
-  { rank: 2, name: 'Mutant Ape Yacht Club', volume: 8432, sales: 45, floorPrice: 2.1, mcap: 45000, owners: 12000, logo: 'https://i.seadn.io/gae/lHex9ppNo0_Y_H89vBoZ677fH0Z7R12W-T-Z_v9?auto=format&w=256' },
-  { rank: 3, name: 'Pudgy Penguins', volume: 5432, sales: 12, floorPrice: 9.8, mcap: 88000, owners: 4800, logo: 'https://i.seadn.io/gae/pS--Z_v9?auto=format&w=256' },
-  { rank: 4, name: 'Azuki', volume: 3219, sales: 8, floorPrice: 6.4, mcap: 64000, owners: 5100, logo: 'https://i.seadn.io/gae/B8_v9?auto=format&w=256' },
-  { rank: 5, name: 'Doodles', volume: 1219, sales: 52, floorPrice: 1.2, mcap: 12000, owners: 10000, logo: 'https://i.seadn.io/gae/A--Z_v9?auto=format&w=256' },
-];
+import { getListings, getNFTs } from '../services/api';
 
 export default function NFTPage() {
-  const [loading, setLoading] = useState(false);
+  const [listings, setListings] = useState([]);
+  const [nfts, setNfts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([getListings(), getNFTs()])
+      .then(([lRes, nRes]) => {
+        setListings(lRes.data.data);
+        setNfts(nRes.data.data);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
-      <GlobalStats />
+      <GlobalStats listings={listings} />
 
       <header style={{ margin: '32px 0 40px' }}>
         <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 4 }}>DIGITAL_COLLECTIBLES_v4</div>
@@ -37,7 +37,7 @@ export default function NFTPage() {
             </tr>
           </thead>
           <tbody>
-            {NFTS.map((nft) => (
+            {loading ? <tr><td colSpan="7" style={{ padding: 40, textAlign: 'center' }}>Loading NFT Data...</td></tr> : nfts.map((nft) => (
               <tr key={nft.name} className="v4-row" style={{ borderBottom: '1px solid var(--cmc-border)' }}>
                 <td style={{ padding: '16px 24px', color: 'var(--text-muted)', fontWeight: 700 }}>{nft.rank}</td>
                 <td style={{ padding: '16px' }}>
