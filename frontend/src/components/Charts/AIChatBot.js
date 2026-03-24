@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { askAI } from '../../services/api';
 
 // ── Crypto knowledge base ─────────────────────────────────────────────────
 const KNOWLEDGE = {
@@ -158,20 +159,22 @@ export default function AIChatBot() {
     const token = localStorage.getItem('token');
     
     if (token) {
-      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/ai/ask`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ message: userText })
-      })
-        .then(res => res.json())
-        .then(data => {
-          setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: data.response, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+      askAI({ message: userText })
+        .then(res => {
+          setMessages(prev => [...prev, { 
+            id: Date.now() + 1, 
+            role: 'ai', 
+            text: res.data.response, 
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          }]);
         })
         .catch(() => {
-          setMessages(prev => [...prev, { id: Date.now() + 1, role: 'ai', text: getAIResponse(userText), time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+          setMessages(prev => [...prev, { 
+            id: Date.now() + 1, 
+            role: 'ai', 
+            text: getAIResponse(userText), 
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+          }]);
         })
         .finally(() => setIsTyping(false));
     } else {

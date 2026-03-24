@@ -104,7 +104,7 @@ const runAIPrediction = (prices, change24h, volume) => {
   else { action = 'HOLD'; direction = 0; }
 
   const dailyVol = (volatility / Math.sqrt(365)) / 100;
-  const predPct = (Math.abs(clampedScore) / 100) * 0.05 + dailyVol;
+  const predPct = (Math.abs(clampedScore) / 100) * 0.07 + dailyVol;
   const target24h = currentPrice * (1 + direction * predPct);
   const target7d = currentPrice * (1 + direction * predPct * 2.8);
   const stopLoss = currentPrice * (1 - (direction >= 0 ? 0.045 : -0.045));

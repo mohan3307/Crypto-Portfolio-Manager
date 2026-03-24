@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { io } from 'socket.io-client';
-import { getListings } from '../services/api';
+import { getListings, getFearGreed, getGlobalStats } from '../services/api';
 
 const MarketContext = createContext();
 
@@ -11,6 +11,8 @@ export const MarketProvider = ({ children }) => {
   const [tickerUpdates, setTickerUpdates] = useState({}); // New micro-updates
   const [whaleAlerts, setWhaleAlerts] = useState([]);
   const [newsHeadlines, setNewsHeadlines] = useState([]);
+  const [fearGreed, setFearGreed] = useState(null);
+  const [globalStats, setGlobalStats] = useState(null);
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
@@ -22,6 +24,9 @@ export const MarketProvider = ({ children }) => {
       (res.data.data || []).forEach(coin => { priceMap[coin.symbol] = coin.price; });
       setPrices(priceMap);
     }).catch(console.error);
+
+    getFearGreed().then(res => setFearGreed(res.data.value)).catch(console.error);
+    getGlobalStats().then(res => setGlobalStats(res.data.data)).catch(console.error);
 
     const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
     const newSocket = io(apiUrl, { transports: ['websocket'] });
@@ -51,11 +56,15 @@ export const MarketProvider = ({ children }) => {
       setNewsHeadlines(prev => [news, ...prev].slice(0, 20));
     });
 
+    newSocket.on('fearGreedUpdate', (data) => {
+      setFearGreed(data.value);
+    });
+
     return () => newSocket.close();
   }, []);
 
   return (
-    <MarketContext.Provider value={{ listings, prices, tickerUpdates, whaleAlerts, newsHeadlines, lastUpdated, socket }}>
+    <MarketContext.Provider value={{ listings, prices, tickerUpdates, whaleAlerts, newsHeadlines, fearGreed, globalStats, lastUpdated, socket }}>
       {children}
     </MarketContext.Provider>
   );

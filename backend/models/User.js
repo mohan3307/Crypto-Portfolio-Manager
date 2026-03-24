@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true, minlength: 6 },
   avatar: { type: String, default: '' },
   currency: { type: String, default: 'USD' },
+  paperBalance: { type: Number, default: 100000 },
   createdAt: { type: Date, default: Date.now }
 });
 

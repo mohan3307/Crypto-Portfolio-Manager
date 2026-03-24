@@ -1,14 +1,23 @@
 import React from 'react';
 import { formatCurrency, formatPercent } from '../../utils/format';
+import { usePaperTrading } from '../../context/PaperTradingContext';
 
 export default function SessionTracker() {
-  const session = {
-    dailyPnL: 1240.50,
-    dailyPnLPct: 2.4,
-    trades: 12,
-    winRate: 75,
-    profitFactor: 2.1
-  };
+  const { history, winRate } = usePaperTrading();
+
+  // Calculate session stats from history
+  const today = new Date().toISOString().split('T')[0];
+  const todayTrades = history.filter(h => h.closedAt && h.closedAt.startsWith(today));
+  const dailyPnL = todayTrades.reduce((sum, h) => sum + h.pnl, 0);
+  const dailyPnLPct = todayTrades.length > 0 ? (dailyPnL / 100000) * 100 : 0; // Relative to initial balance
+
+  const totalTrades = history.length;
+  const wins = history.filter(h => h.pnl > 0);
+  const losses = history.filter(h => h.pnl < 0);
+  
+  const totalProfit = wins.reduce((s, h) => s + h.pnl, 0);
+  const totalLoss = Math.abs(losses.reduce((s, h) => s + h.pnl, 0)) || 1;
+  const profitFactor = (totalProfit / totalLoss).toFixed(2);
 
   return (
     <div className="v4-session-card">
@@ -25,16 +34,16 @@ export default function SessionTracker() {
 
       {/* P&L grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '0 20px' }}>
-        <div className="v4-session-stat" style={{ borderTop: '2px solid #10b981' }}>
+        <div className="v4-session-stat" style={{ borderTop: `2px solid ${dailyPnL >= 0 ? '#10b981' : '#ea3943'}` }}>
           <div style={{ fontSize: 8, color: '#4a5e78', fontWeight: 950, letterSpacing: 1.5, marginBottom: 8 }}>DAILY_DELTA</div>
-          <div style={{ fontSize: 20, fontWeight: 950, color: '#10b981', fontFamily: 'Space Mono', letterSpacing: -1 }}>
-            +{formatCurrency(session.dailyPnL)}
+          <div style={{ fontSize: 20, fontWeight: 950, color: dailyPnL >= 0 ? '#10b981' : '#ea3943', fontFamily: 'JetBrains Mono,monospace', letterSpacing: -1 }}>
+            {dailyPnL >= 0 ? '+' : ''}{formatCurrency(dailyPnL)}
           </div>
         </div>
         <div className="v4-session-stat" style={{ borderTop: '2px solid #3b82f6' }}>
           <div style={{ fontSize: 8, color: '#4a5e78', fontWeight: 950, letterSpacing: 1.5, marginBottom: 8 }}>STRATEGIC_GROWTH</div>
-          <div style={{ fontSize: 20, fontWeight: 950, color: '#3b82f6', fontFamily: 'Space Mono', letterSpacing: -1 }}>
-            +{formatPercent(session.dailyPnLPct)}
+          <div style={{ fontSize: 20, fontWeight: 950, color: '#3b82f6', fontFamily: 'JetBrains Mono,monospace', letterSpacing: -1 }}>
+            {dailyPnLPct >= 0 ? '+' : ''}{formatPercent(dailyPnLPct)}
           </div>
         </div>
       </div>
@@ -42,13 +51,13 @@ export default function SessionTracker() {
       {/* Metrics */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 20px 20px' }}>
         {[
-          { label: 'EXECUTED_VECTORS', val: `${session.trades} TRADES`, color: '#fff' },
-          { label: 'SESSION_EFFICIENCY', val: `${session.winRate}% WIN_RATE`, color: '#3b82f6' },
-          { label: 'PROFIT_COEFFICIENT', val: `${session.profitFactor}x FACTOR`, color: '#f59e0b' },
+          { label: 'EXECUTED_VECTORS', val: `${totalTrades} TRADES`, color: '#fff' },
+          { label: 'SESSION_EFFICIENCY', val: `${winRate.toFixed(1)}% WIN_RATE`, color: '#3b82f6' },
+          { label: 'PROFIT_COEFFICIENT', val: `${profitFactor}x FACTOR`, color: '#f59e0b' },
         ].map((item, i) => (
           <div key={i} className="v4-session-row">
             <span style={{ fontSize: 9, color: '#4a5e78', fontWeight: 950, letterSpacing: 1 }}>{item.label}</span>
-            <span style={{ fontSize: 10, fontWeight: 950, color: item.color, fontFamily: 'Space Mono' }}>{item.val}</span>
+            <span style={{ fontSize: 10, fontWeight: 950, color: item.color, fontFamily: 'JetBrains Mono,monospace' }}>{item.val}</span>
           </div>
         ))}
       </div>
@@ -56,7 +65,7 @@ export default function SessionTracker() {
       {/* Win-rate bar */}
       <div style={{ padding: '0 20px 20px' }}>
         <div style={{ height: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ width: `${session.winRate}%`, height: '100%', background: '#3b82f6', borderRadius: 2, boxShadow: '0 0 10px rgba(59, 130, 246, 0.4)', transition: '1s' }} />
+          <div style={{ width: `${winRate}%`, height: '100%', background: '#3b82f6', borderRadius: 2, boxShadow: '0 0 10px rgba(59, 130, 246, 0.4)', transition: '1s' }} />
         </div>
       </div>
 

@@ -122,11 +122,11 @@ function TradingViewChart({ symbol = 'BTC' }) {
     <div style={{ 
       width: '100%', 
       height: '100%', 
-      minHeight: '550px', 
+      minHeight: '700px', 
       background: '#04070d', 
       border: '1px solid #1a2840',
       overflow: 'hidden',
-      borderRadius: '8px'
+      borderRadius: '4px'
     }}>
       <iframe
         id="tradingview_widget"

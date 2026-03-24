@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ProTradingChart from '../components/Charts/ProTradingChart';
+import TradingViewChart from '../components/Charts/TradingViewChart';
 import ExecutionBlade from '../components/Tools/ExecutionBlade';
 import NewsFeed from '../components/Charts/NewsFeed';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
@@ -179,12 +179,9 @@ export default function TradingPage() {
 
           <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
             {selected && (
-              <ProTradingChart 
+              <TradingViewChart 
                 key={selected.symbol} 
                 symbol={selected.symbol} 
-                coinName={selected.name} 
-                coinColor={coinColor}
-                logo={selected.logo}
               />
             )}
             <div className="v4-neural-overlay">TERMINAL_v4.2 // FEED_ID: {Math.random().toString(16).slice(2, 8).toUpperCase()}</div>

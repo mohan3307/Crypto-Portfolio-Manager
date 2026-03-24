@@ -49,6 +49,7 @@ app.use('/api/watchlist', require('./routes/watchlist'));
 app.use('/api/market', require('./routes/market'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/paper', require('./routes/paper'));
 app.use('/api/alerts', require('./routes/alerts'));
 
 mongoose.connect(process.env.MONGO_URI, {

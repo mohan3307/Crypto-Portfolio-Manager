@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useMarket } from '../../context/MarketContext';
 
 const ZONES = [
   { label: 'Extreme Fear', min: 0,  max: 25,  color: '#e11d48', bg: 'rgba(225,29,72,0.15)'   },
@@ -22,18 +23,17 @@ function simValue() {
 }
 
 export default function FearGreedGauge() {
+  const { fearGreed } = useMarket();
   const canvasRef = useRef(null);
-  const [value, setValue]   = useState(simValue);
-  const [history, setHistory] = useState(() => Array.from({ length: 30 }, (_, i) => Math.max(5, Math.min(95, 55 + Math.sin(i / 4) * 25))));
+  const [value, setValue] = useState(50);
+  const [history, setHistory] = useState(() => Array.from({ length: 30 }, (_, i) => 30 + Math.random() * 40));
 
   useEffect(() => {
-    const iv = setInterval(() => {
-      const v = simValue();
-      setValue(v);
-      setHistory(h => [...h.slice(1), v]);
-    }, 5000);
-    return () => clearInterval(iv);
-  }, []);
+    if (fearGreed !== null && fearGreed !== undefined) {
+      setValue(fearGreed);
+      setHistory(h => [...h.slice(1), fearGreed]);
+    }
+  }, [fearGreed]);
 
   // Draw gauge canvas
   useEffect(() => {

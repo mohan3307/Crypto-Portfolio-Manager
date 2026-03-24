@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Base API instance
 const API = axios.create({
-  baseURL: 'https://crypto-portfolio-manager-2.onrender.com/api'
+  baseURL: `${process.env.REACT_APP_API_URL}/api` || "http://localhost:5000/api"
 });
 
 // ================= REQUEST INTERCEPTOR =================
@@ -59,6 +59,10 @@ export const getNews = () => API.get("/market/news/feed");
 export const getNFTs = () => API.get("/market/nfts/top");
 export const getCalendar = () => API.get("/market/calendar/events");
 export const getCommunity = () => API.get("/market/community/feed");
+export const getFearGreed = () => API.get("/market/fear-greed");
+export const getRiskTelemetry = () => API.get("/market/risk-telemetry");
+export const getGlobalStats = () => API.get("/market/global-stats");
+export const getMacroCalendar = () => API.get("/market/calendar/macro");
 
 
 // ================= PORTFOLIO =================
@@ -90,6 +94,14 @@ export const getAlerts = () => API.get("/alerts");
 export const createAlert = (data) => API.post("/alerts", data);
 export const toggleAlert = (id) => API.patch(`/alerts/${id}/toggle`);
 export const deleteAlert = (id) => API.delete(`/alerts/${id}`);
+
+
+// ================= PAPER TRADING =================
+export const getPaperPositions = () => API.get("/paper/positions");
+export const getPaperHistory = () => API.get("/paper/history");
+export const openPaperPosition = (data) => API.post("/paper/open", data);
+export const closePaperPosition = (id, data) => API.post(`/paper/close/${id}`, data);
+export const resetPaperAccount = () => API.post("/paper/reset");
 
 
 export default API;

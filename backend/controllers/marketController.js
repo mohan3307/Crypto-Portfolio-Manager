@@ -437,6 +437,12 @@ exports.startTickerSimulation = (io) => {
     setTimeout(sendSectorMetrics, 20000);
   };
   
+  const sendFearGreed = () => {
+    const value = 55 + Math.sin(Date.now() / 800000) * 22 + (Math.random() - 0.5) * 5;
+    io.emit('fearGreedUpdate', { value, timestamp: Date.now() });
+    setTimeout(sendFearGreed, 15000);
+  };
+  
   setTimeout(sendWhaleAlert, 30000);
   setTimeout(sendLiquidation, 10000);
   setTimeout(sendAIPattern, 15000);
@@ -447,6 +453,14 @@ exports.startTickerSimulation = (io) => {
   setTimeout(sendNeuralForecast, 6000);
   setTimeout(sendWhaleFlow, 4000);
   setTimeout(sendSectorMetrics, 15000);
+  setTimeout(sendFearGreed, 8000);
+};
+
+exports.getFearGreed = async (req, res) => {
+  try {
+    const value = 55 + Math.sin(Date.now() / 800000) * 22;
+    res.json({ value, timestamp: Date.now() });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
 const NEWS_POOL = [
@@ -621,5 +635,66 @@ exports.getCommunityFeed = async (req, res) => {
       { id: 2, author: 'Satoshi Nakamoto', handle: '@Satoshi', content: 'I am not Dorian Nakamoto. I am the Ghost in the machine.', time: '5h ago', likes: '8K', logo: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1.png' },
     ];
     res.json({ data: feeds });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getRiskTelemetry = async (req, res) => {
+  try {
+    const metrics = [
+      { label: 'SYSTEMIC_BETA', value: (1.1 + Math.random() * 0.3).toFixed(2), color: '#10b981', desc: 'VOLATILITY_RATIO_(BTC)' },
+      { label: 'SHARPE_ALPHA', value: (1.8 + Math.random() * 1).toFixed(2), color: '#fff', desc: 'RISK_ADJ_EFFICIENCY' },
+      { label: 'SORTINO_RATIO', value: (2.5 + Math.random() * 0.8).toFixed(2), color: '#f59e0b', desc: 'DOWNSIDE_VARIANCE_ADJ' },
+      { label: 'VaR_MONITOR', value: `$${(1.5 + Math.random() * 2).toFixed(1)}K`, color: '#ef4444', desc: 'DAILY_STOCHASTIC_RISK' },
+    ];
+    const assets = ['BTC', 'ETH', 'SOL', 'BNB', 'LINK'];
+    const matrix = [];
+    for(let i=0; i<5; i++) {
+      const row = [];
+      for(let j=0; j<5; j++) {
+        if (i === j) row.push(1.0);
+        else row.push(0.3 + Math.random() * 0.6);
+      }
+      matrix.push(row);
+    }
+    res.json({ metrics, assets, matrix });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getGlobalStats = async (req, res) => {
+  try {
+    if (listingCache.length === 0) await exports.refreshPriceCache();
+    
+    const totalMCap = listingCache.reduce((a, b) => a + (b.marketCap || 0), 0) || 2854321987654;
+    const totalVol = listingCache.reduce((a, b) => a + (b.volume24h || 0), 0) || 124532198765;
+    const btc = listingCache.find(c => c.symbol === 'BTC');
+    const eth = listingCache.find(c => c.symbol === 'ETH');
+    
+    const stats = {
+      cryptos: listingCache.length,
+      exchanges: 764,
+      totalMCap,
+      totalVol,
+      btcDom: btc ? (btc.marketCap / totalMCap * 100) : 52.4,
+      ethDom: eth ? (eth.marketCap / totalMCap * 100) : 17.2,
+      ethGas: Math.floor(20 + Math.random() * 15),
+      fearGreed: 55 + Math.sin(Date.now() / 800000) * 22,
+      defiMCap: 84200000000 + (Math.random() - 0.5) * 1000000000,
+      totalTVL: 104500000000 + (Math.random() - 0.5) * 500000000
+    };
+    
+    res.json({ data: stats });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getEconomicCalendar = async (req, res) => {
+  try {
+    const events = [
+      { title: 'CORE CPI (MOM)', impact: 'HIGH', time: 'TOMORROW 18:00', volatility: '🚀', code: 'US.CPI' },
+      { title: 'FOMC MEETING MINUTES', impact: 'MEDIUM', time: 'IN 2 DAYS', volatility: '📈', code: 'US.FOMC' },
+      { title: 'INITIAL JOBLESS CLAIMS', impact: 'LOW', time: 'THU 17:30', volatility: '🌓', code: 'US.IJC' },
+      { title: 'TOKEN UNLOCK: $SOL', impact: 'HIGH', time: 'SAT 12:00', volatility: '🔥', code: 'EXP.SOL' },
+      { title: 'ECB RATE DECISION', impact: 'MEDIUM', time: 'FRI 14:15', volatility: '🌓', code: 'EU.RATE' }
+    ];
+    res.json({ data: events });
   } catch (err) { res.status(500).json({ error: err.message }); }
 };

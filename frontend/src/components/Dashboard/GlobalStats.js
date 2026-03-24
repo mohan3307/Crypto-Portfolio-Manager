@@ -1,32 +1,37 @@
 import React from 'react';
 import { formatCurrency } from '../../utils/format';
+import { useMarket } from '../../context/MarketContext';
 
 const StatItem = ({ label, value, change, color, isLink }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', cursor: isLink ? 'pointer' : 'default' }}>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#7b94b8', whiteSpace: 'nowrap', cursor: isLink ? 'pointer' : 'default' }}>
     <span style={{ fontWeight: 500 }}>{label}:</span>
-    <span style={{ color: color || 'var(--cmc-blue)', fontWeight: 600 }}>{value}</span>
+    <span style={{ color: color || '#3861fb', fontWeight: 600 }}>{value}</span>
     {change !== undefined && (
-      <span style={{ color: change >= 0 ? 'var(--cmc-green)' : 'var(--cmc-red)', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <span style={{ color: change >= 0 ? '#16c784' : '#ea3943', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
         {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(2)}%
       </span>
     )}
   </div>
 );
 
-const Separator = () => <div style={{ width: 1, height: 12, background: 'var(--cmc-border)', margin: '0 4px' }} />;
+const Separator = () => <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.06)', margin: '0 4px' }} />;
 
-export default function GlobalStats({ listings = [] }) {
-  const cryptoCount = listings.length ? listings.length.toLocaleString() : '10,000+';
-  const exchangeCount = 764;
-  const totalMCap = listings.reduce((a, b) => a + (b.marketCap || 0), 0) || 2854321987654;
-  const totalVol = listings.reduce((a, b) => a + (b.volume24h || 0), 0) || 124532198765;
-  const btcDom = (listings.find(c => c.symbol === 'BTC')?.marketCap || 0) / (totalMCap || 1) * 100 || 52.4;
-  const ethDom = (listings.find(c => c.symbol === 'ETH')?.marketCap || 0) / (totalMCap || 1) * 100 || 17.2;
+export default function GlobalStats() {
+  const { listings, globalStats } = useMarket();
+  
+  const cryptoCount = globalStats?.cryptos || listings.length || '10,000+';
+  const exchangeCount = globalStats?.exchanges || 764;
+  const totalMCap = globalStats?.totalMCap || 2854321987654;
+  const totalVol = globalStats?.totalVol || 124532198765;
+  const btcDom = globalStats?.btcDom || 52.4;
+  const ethDom = globalStats?.ethDom || 17.2;
+  const ethGas = globalStats?.ethGas || 24;
+  const fearGreedValue = Math.round(globalStats?.fearGreed || 65);
 
   return (
     <div style={{ 
-      background: 'var(--bg-void)', 
-      borderBottom: '1px solid var(--cmc-border)', 
+      background: '#04070d', 
+      borderBottom: '1px solid rgba(255,255,255,0.06)', 
       padding: '8px 24px',
       display: 'flex',
       alignItems: 'center',
@@ -37,9 +42,8 @@ export default function GlobalStats({ listings = [] }) {
       top: 0,
       zIndex: 1000,
       backdropFilter: 'blur(12px)',
-      backgroundOpacity: 0.9
     }}>
-      <StatItem label="Cryptos" value={cryptoCount} isLink />
+      <StatItem label="Cryptos" value={cryptoCount.toLocaleString()} isLink />
       <Separator />
       <StatItem label="Exchanges" value={exchangeCount} isLink />
       <Separator />
@@ -49,13 +53,13 @@ export default function GlobalStats({ listings = [] }) {
       <Separator />
       <StatItem label="Dominance" value={`BTC: ${btcDom.toFixed(1)}% ETH: ${ethDom.toFixed(1)}%`} isLink />
       <Separator />
-      <StatItem label="ETH Gas" value="24 Gwei" color="var(--cmc-blue)" isLink />
+      <StatItem label="ETH Gas" value={`${ethGas} Gwei`} color="#3861fb" isLink />
       <Separator />
-      <StatItem label="Fear & Greed" value="Index: 65 (Greed)" color="var(--cmc-green)" isLink />
+      <StatItem label="Fear & Greed" value={`${fearGreedValue}/100`} color={fearGreedValue > 50 ? '#16c784' : '#ea3943'} isLink />
       <Separator />
-      <StatItem label="DeFi MCap" value="$84.2B" change={1.2} isLink />
+      <StatItem label="DeFi MCap" value={formatCurrency(globalStats?.defiMCap || 84200000000)} change={1.2} isLink />
       <Separator />
-      <StatItem label="Total TVL" value="$104.5B" change={-0.4} isLink />
+      <StatItem label="Total TVL" value={formatCurrency(globalStats?.totalTVL || 104500000000)} change={-0.4} isLink />
     </div>
   );
 }
