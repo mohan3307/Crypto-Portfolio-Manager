@@ -1,144 +1,99 @@
-import React, { memo } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 
 const TV_SYMBOL_MAP = {
-  BTC:   'BINANCE:BTCUSDT',
-  ETH:   'BINANCE:ETHUSDT',
-  SOL:   'BINANCE:SOLUSDT',
-  BNB:   'BINANCE:BNBUSDT',
-  XRP:   'BINANCE:XRPUSDT',
-  DOGE:  'BINANCE:DOGEUSDT',
-  ADA:   'BINANCE:ADAUSDT',
-  AVAX:  'BINANCE:AVAXUSDT',
-  DOT:   'BINANCE:DOTUSDT',
-  POL:   'BINANCE:MATICUSDT',
-  MATIC: 'BINANCE:MATICUSDT',
-  LINK:  'BINANCE:LINKUSDT',
-  UNI:   'BINANCE:UNIUSDT',
-  ATOM:  'BINANCE:ATOMUSDT',
-  LTC:   'BINANCE:LTCUSDT',
-  NEAR:  'BINANCE:NEARUSDT',
-  APT:   'BINANCE:APTUSDT',
-  ARB:   'BINANCE:ARBUSDT',
-  OP:    'BINANCE:OPUSDT',
-  TON:   'BINANCE:TONUSDT',
-  SHIB:  'BINANCE:SHIBUSDT',
-  IMX:   'BINANCE:IMXUSDT',
-  BLUR:  'BINANCE:BLURUSDT',
-  SEI:   'BINANCE:SEIUSDT',
-  SUI:   'BINANCE:SUIUSDT',
-  ALGO:  'BINANCE:ALGOUSDT',
-  FIL:   'BINANCE:FILUSDT',
-  XMR:   'BINANCE:XMRUSDT',
-  AAVE:  'BINANCE:AAVEUSDT',
-  MKR:   'BINANCE:MKRUSDT',
-  CRV:   'BINANCE:CRVUSDT',
-  LDO:   'BINANCE:LDOUSDT',
-  DYDX:  'BINANCE:DYDXUSDT',
-  INJ:   'BINANCE:INJUSDT',
-  STX:   'BINANCE:STXUSDT',
-  TIA:   'BINANCE:TIAUSDT',
-  WIF:   'BINANCE:WIFUSDT',
-  PEPE:  'BINANCE:PEPEUSDT',
-  BONK:  'BINANCE:BONKUSDT',
-  FLOKI: 'BINANCE:FLOKIUSDT',
-  TAO:   'BINANCE:TAOUSDT',
-  KAS:   'BINANCE:KASUSDT',
-  PENDLE:'BINANCE:PENDLEUSDT',
-  RNDR:  'BINANCE:RNDRUSDT',
-  FET:   'BINANCE:FETUSDT',
-  WLD:   'BINANCE:WLDUSDT',
-  JUP:   'BINANCE:JUPUSDT',
-  JTO:   'BINANCE:JTOUSDT',
-  PYTH:  'BINANCE:PYTHUSDT',
-  AR:    'BINANCE:ARUSDT',
-  GALA:  'BINANCE:GALAUSDT',
-  AXS:   'BINANCE:AXSUSDT',
-  SAND:  'BINANCE:SANDUSDT',
-  MANA:  'BINANCE:MANAUSDT',
-  CAKE:  'BINANCE:CAKEUSDT',
-  '1INCH':'BINANCE:1INCHUSDT',
-  LRC:   'BINANCE:LRCUSDT',
-  BAT:   'BINANCE:BATUSDT',
-  CHZ:   'BINANCE:CHZUSDT',
-  ZIL:   'BINANCE:ZILUSDT',
-  ENJ:   'BINANCE:ENJUSDT',
-  VET:   'BINANCE:VETUSDT',
-  THETA: 'BINANCE:THETAUSDT',
-  XTZ:   'BINANCE:XTZUSDT',
-  NEO:   'BINANCE:NEOUSDT',
-  QTUM:  'BINANCE:QTUMUSDT',
-  ICX:   'BINANCE:ICXUSDT',
-  EGLD:  'BINANCE:EGLDUSDT',
-  ICP:   'BINANCE:ICPUSDT',
-  ETC:   'BINANCE:ETCUSDT',
-  XLM:   'BINANCE:XLMUSDT',
-  TRX:   'BINANCE:TRXUSDT',
-  SNX:   'BINANCE:SNXUSDT',
-  COMP:  'BINANCE:COMPUSDT',
-  YFI:   'BINANCE:YFIUSDT',
-  BAL:   'BINANCE:BALUSDT',
-  OKB:   'BINANCE:OKBUSDT',
-  STORJ: 'BINANCE:STORJUSDT',
-  NMR:   'BINANCE:NMRUSDT',
-  OCEAN: 'BINANCE:OCEANUSDT',
-  ACH:   'BINANCE:ARUSDT',
+  BTC: 'BINANCE:BTCUSDT', ETH: 'BINANCE:ETHUSDT', SOL: 'BINANCE:SOLUSDT',
+  BNB: 'BINANCE:BNBUSDT', XRP: 'BINANCE:XRPUSDT', DOGE: 'BINANCE:DOGEUSDT',
+  ADA: 'BINANCE:ADAUSDT', AVAX: 'BINANCE:AVAXUSDT', DOT: 'BINANCE:DOTUSDT',
+  POL: 'BINANCE:MATICUSDT', MATIC: 'BINANCE:MATICUSDT', LINK: 'BINANCE:LINKUSDT',
+  UNI: 'BINANCE:UNIUSDT', ATOM: 'BINANCE:ATOMUSDT', LTC: 'BINANCE:LTCUSDT',
+  NEAR: 'BINANCE:NEARUSDT', APT: 'BINANCE:APTUSDT', ARB: 'BINANCE:ARBUSDT',
+  OP: 'BINANCE:OPUSDT', TON: 'BINANCE:TONUSDT', SHIB: 'BINANCE:SHIBUSDT',
+  IMX: 'BINANCE:IMXUSDT', BLUR: 'BINANCE:BLURUSDT', SEI: 'BINANCE:SEIUSDT',
+  SUI: 'BINANCE:SUIUSDT', ALGO: 'BINANCE:ALGOUSDT', FIL: 'BINANCE:FILUSDT',
+  XMR: 'BINANCE:XMRUSDT', AAVE: 'BINANCE:AAVEUSDT', MKR: 'BINANCE:MKRUSDT',
+  CRV: 'BINANCE:CRVUSDT', LDO: 'BINANCE:LDOUSDT', DYDX: 'BINANCE:DYDXUSDT',
+  INJ: 'BINANCE:INJUSDT', STX: 'BINANCE:STXUSDT', TIA: 'BINANCE:TIAUSDT',
+  WIF: 'BINANCE:WIFUSDT', PEPE: 'BINANCE:PEPEUSDT', BONK: 'BINANCE:BONKUSDT',
+  FLOKI: 'BINANCE:FLOKIUSDT', TAO: 'BINANCE:TAOUSDT', KAS: 'BINANCE:KASUSDT',
+  PENDLE: 'BINANCE:PENDLEUSDT', RNDR: 'BINANCE:RNDRUSDT', RENDER: 'BINANCE:RENDERUSDT',
+  FET: 'BINANCE:FETUSDT', WLD: 'BINANCE:WLDUSDT', JUP: 'BINANCE:JUPUSDT',
+  JTO: 'BINANCE:JTOUSDT', PYTH: 'BINANCE:PYTHUSDT', AR: 'BINANCE:ARUSDT',
+  GALA: 'BINANCE:GALAUSDT', AXS: 'BINANCE:AXSUSDT', SAND: 'BINANCE:SANDUSDT',
+  MANA: 'BINANCE:MANAUSDT', CAKE: 'BINANCE:CAKEUSDT', '1INCH': 'BINANCE:1INCHUSDT',
+  LRC: 'BINANCE:LRCUSDT', BAT: 'BINANCE:BATUSDT', CHZ: 'BINANCE:CHZUSDT',
+  ZIL: 'BINANCE:ZILUSDT', ENJ: 'BINANCE:ENJUSDT', VET: 'BINANCE:VETUSDT',
+  THETA: 'BINANCE:THETAUSDT', XTZ: 'BINANCE:XTZUSDT', NEO: 'BINANCE:NEOUSDT',
+  QTUM: 'BINANCE:QTUMUSDT', ICX: 'BINANCE:ICXUSDT', EGLD: 'BINANCE:EGLDUSDT',
+  ICP: 'BINANCE:ICPUSDT', ETC: 'BINANCE:ETCUSDT', XLM: 'BINANCE:XLMUSDT',
+  TRX: 'BINANCE:TRXUSDT', SNX: 'BINANCE:SNXUSDT', COMP: 'BINANCE:COMPUSDT',
+  YFI: 'BINANCE:YFIUSDT', BAL: 'BINANCE:BALUSDT', OKB: 'BINANCE:OKBUSDT',
+  STORJ: 'BINANCE:STORJUSDT', NMR: 'BINANCE:NMRUSDT', OCEAN: 'BINANCE:OCEANUSDT',
+  HYPE: 'BINANCE:HYPEUSDT', BCH: 'BINANCE:BCHUSDT', HBAR: 'BINANCE:HBARUSDT',
+  GRT: 'BINANCE:GRTUSDT', RAY: 'BINANCE:RAYUSDT', AERO: 'BINANCE:AEROUSDT',
 };
 
 const getTVSymbol = (symbol) => TV_SYMBOL_MAP[symbol] || `BINANCE:${symbol}USDT`;
 
-/**
- * ── TradingView Chart Component (Iframe Method) ──────────────────────────
- * Fixed theme and symbol resolution.
- */
 function TradingViewChart({ symbol = 'BTC' }) {
+  const containerRef = useRef(null);
   const tvSymbol = getTVSymbol(symbol);
-  
-  // Base URL for the free advanced chart widget (most compatible)
-  const baseUrl = "https://www.tradingview.com/widgetembed/";
-  
-  // Construct parameters
-  const params = [
-    `symbol=${encodeURIComponent(tvSymbol)}`,
-    "interval=D",
-    "hidesidetoolbar=0",
-    "symboledit=1",
-    "saveimage=1",
-    "toolbarbg=04070d",
-    "theme=dark",
-    "style=1",
-    "timezone=Etc%2FUTC",
-    "withdateranges=1",
-    "studies=%5B%5D",
-    "locale=en",
-    "utm_source=localhost",
-    "utm_medium=widget",
-    "utm_campaign=chart",
-    "frameElementId=tradingview_widget"
-  ];
 
-  const fullUrl = `${baseUrl}?${params.join('&')}`;
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Clear previous widget
+    container.innerHTML = '';
+
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget';
+    widgetDiv.style.height = '100%';
+    widgetDiv.style.width = '100%';
+    container.appendChild(widgetDiv);
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      autosize: true,
+      symbol: tvSymbol,
+      interval: 'D',
+      timezone: 'Etc/UTC',
+      theme: 'dark',
+      style: '1',
+      locale: 'en',
+      backgroundColor: 'rgba(4, 7, 13, 1)',
+      gridColor: 'rgba(26, 40, 64, 0.5)',
+      withdateranges: true,
+      hide_side_toolbar: false,
+      allow_symbol_change: true,
+      save_image: false,
+      calendar: false,
+      hide_volume: false,
+      support_host: 'https://www.tradingview.com',
+    });
+
+    container.appendChild(script);
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [tvSymbol]);
 
   return (
-    <div style={{ 
-      width: '100%', 
-      height: '100%', 
-      minHeight: '700px', 
-      background: '#04070d', 
-      border: '1px solid #1a2840',
-      overflow: 'hidden',
-      borderRadius: '4px'
-    }}>
-      <iframe
-        id="tradingview_widget"
-        title={`TradingView Chart for ${symbol}`}
-        src={fullUrl}
-        style={{ width: '100%', height: '100%', border: 'none' }}
-        frameBorder="0"
-        allowTransparency="true"
-        scrolling="no"
-        allowFullScreen
-      ></iframe>
-    </div>
+    <div
+      ref={containerRef}
+      className="tradingview-widget-container"
+      style={{
+        width: '100%',
+        height: '100%',
+        minHeight: '500px',
+        background: '#04070d',
+      }}
+    />
   );
 }
 
