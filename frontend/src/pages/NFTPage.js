@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react';
 import { getListings, getNFTs } from '../services/api';
+import GlobalStats from '../components/Dashboard/GlobalStats';
 
 export default function NFTPage() {
   const [listings, setListings] = useState([]);

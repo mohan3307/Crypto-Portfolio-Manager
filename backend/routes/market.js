@@ -3,7 +3,7 @@ const router = express.Router();
 const { 
   getListings, getTrending, getPrices, getChartData,
   getExchanges, getCategories, getNewsFeed, getNFTs, getCalendarEvents, getCommunityFeed, getFearGreed, getRiskTelemetry,
-  getGlobalStats, getEconomicCalendar
+  getGlobalStats, getEconomicCalendar, getRoadmap, getStrategies
 } = require('../controllers/marketController');
 const auth = require('../middleware/auth');
 
@@ -22,5 +22,7 @@ router.get('/fear-greed', getFearGreed);
 router.get('/risk-telemetry', getRiskTelemetry);
 router.get('/global-stats', getGlobalStats);
 router.get('/calendar/macro', getEconomicCalendar);
+router.get('/roadmap', getRoadmap);
+router.get('/strategies', getStrategies);
 
 module.exports = router;

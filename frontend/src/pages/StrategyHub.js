@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../utils/format';
-
-const MOCK_STRATEGIES = [
-  { id: 1, name: 'WHALE_VECTOR_V4', status: 'Active', logic: 'LIQUIDITY_DELTA > $10M && SENTIMENT_SCORE > 0.8', profit: 450.20, trades: 14, icon: '🐋' },
-  { id: 2, name: 'DIP_SURGE_PROTOCOL', status: 'Paused', logic: 'RSI_NODE < 30 && SUPPORT_BOUNCE_PROB > 0.85', profit: -12.40, trades: 5, icon: '🎣' },
-  { id: 3, name: 'NEURAL_ALPHA_CORE', status: 'Active', logic: 'AI_CONFIDENCE > 0.92 -> LONG_EXPOSURE', profit: 1280.90, trades: 21, icon: '🧠' },
-];
+import { getStrategies } from '../services/api';
 
 export default function StrategyHub() {
-  const [strategies] = useState(MOCK_STRATEGIES);
+  const [strategies, setStrategies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getStrategies()
+      .then(res => setStrategies(res.data.data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="v4-ping-large" /></div>;
 
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>

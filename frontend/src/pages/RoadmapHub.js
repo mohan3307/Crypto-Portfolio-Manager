@@ -1,13 +1,17 @@
-import React from 'react';
-
-const ROADMAP_DATA = [
-  { quarter: 'NEXT_UP', title: 'EXCHANGE_BRIDGE_V1', desc: 'Structural integration with Tier-1 exchange APIs for low-latency cross-vector execution.', status: 'DEPLOYING', impact: 'Institutional' },
-  { quarter: 'Q2_2026', title: 'MONTE_CARLO_ENGINE', desc: 'Predictive modeling of 50,000+ stochastic price paths utilizing Gaussian volatility curvature.', status: 'NEURAL_STORM', impact: 'Predictive' },
-  { quarter: 'Q3_2026', title: 'MPC_SECURE_VAULTS', desc: 'Enterprise-grade Multi-Party Computation architecture for high-assurance asset custody.', status: 'PENDING', impact: 'Security' },
-  { quarter: 'Q4_2026', title: 'PROP-FIRM_PROTOCOLS', desc: 'Advanced sub-account reconciliation for institutional scale copy-trading and risk management.', status: 'DORMANT', impact: 'Scalability' }
-];
+import React, { useState, useEffect } from 'react';
+import { getRoadmap } from '../services/api';
 
 export default function RoadmapHub() {
+  const [roadmap, setRoadmap] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getRoadmap()
+      .then(res => setRoadmap(res.data.data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="v4-ping-large" /></div>;
   return (
     <div style={{ maxWidth: 1600, margin: '0 auto' }}>
       <header style={{ textAlign: 'center', marginBottom: 100, marginTop: 40 }}>
@@ -20,7 +24,7 @@ export default function RoadmapHub() {
         {/* Central Spine */}
         <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 2, background: 'linear-gradient(to bottom, transparent, rgba(59,130,246,0.3) 15%, rgba(59,130,246,0.3) 85%, transparent)', transform: 'translateX(-50%)' }} />
         
-        {ROADMAP_DATA.map((item, i) => (
+        {roadmap.map((item, i) => (
           <div key={i} style={{ 
             display: 'flex', 
             justifyContent: i % 2 === 0 ? 'flex-start' : 'flex-end', 

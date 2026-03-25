@@ -63,6 +63,8 @@ export const getFearGreed = () => API.get("/market/fear-greed");
 export const getRiskTelemetry = () => API.get("/market/risk-telemetry");
 export const getGlobalStats = () => API.get("/market/global-stats");
 export const getMacroCalendar = () => API.get("/market/calendar/macro");
+export const getRoadmap = () => API.get("/market/roadmap");
+export const getStrategies = () => API.get("/market/strategies");
 
 
 // ================= PORTFOLIO =================

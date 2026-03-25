@@ -698,3 +698,26 @@ exports.getEconomicCalendar = async (req, res) => {
     res.json({ data: events });
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
+
+exports.getRoadmap = async (req, res) => {
+  try {
+    const roadmap = [
+      { quarter: 'NEXT_UP', title: 'EXCHANGE_BRIDGE_V1', desc: 'Structural integration with Tier-1 exchange APIs for low-latency cross-vector execution.', status: 'DEPLOYING', impact: 'Institutional' },
+      { quarter: 'Q2_2026', title: 'MONTE_CARLO_ENGINE', desc: 'Predictive modeling of 50,000+ stochastic price paths utilizing Gaussian volatility curvature.', status: 'NEURAL_STORM', impact: 'Predictive' },
+      { quarter: 'Q3_2026', title: 'MPC_SECURE_VAULTS', desc: 'Enterprise-grade Multi-Party Computation architecture for high-assurance asset custody.', status: 'PENDING', impact: 'Security' },
+      { quarter: 'Q4_2026', title: 'PROP-FIRM_PROTOCOLS', desc: 'Advanced sub-account reconciliation for institutional scale copy-trading and risk management.', status: 'DORMANT', impact: 'Scalability' }
+    ];
+    res.json({ data: roadmap });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
+exports.getStrategies = async (req, res) => {
+  try {
+    const strategies = [
+      { id: 1, name: 'WHALE_VECTOR_V4', status: 'Active', logic: 'LIQUIDITY_DELTA > $10M && SENTIMENT_SCORE > 0.8', profit: 450.20, trades: 14, icon: '🐋' },
+      { id: 2, name: 'DIP_SURGE_PROTOCOL', status: 'Paused', logic: 'RSI_NODE < 30 && SUPPORT_BOUNCE_PROB > 0.85', profit: -12.40, trades: 5, icon: '🎣' },
+      { id: 3, name: 'NEURAL_ALPHA_CORE', status: 'Active', logic: 'AI_CONFIDENCE > 0.92 -> LONG_EXPOSURE', profit: 1280.90, trades: 21, icon: '🧠' },
+    ];
+    res.json({ data: strategies });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};

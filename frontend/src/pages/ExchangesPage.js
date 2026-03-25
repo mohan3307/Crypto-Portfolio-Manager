@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { getListings, getExchanges } from '../services/api';
 import { formatCurrency } from '../utils/format';
 import GlobalStats from '../components/Dashboard/GlobalStats';

@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from 'react';
 import { getListings, getCommunity } from '../services/api';
+import GlobalStats from '../components/Dashboard/GlobalStats';
 
 export default function CommunityPage() {
   const [listings, setListings] = useState([]);
