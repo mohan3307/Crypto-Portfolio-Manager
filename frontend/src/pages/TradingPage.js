@@ -5,7 +5,8 @@ import NewsFeed from '../components/Charts/NewsFeed';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
 import OrderBook from '../components/Charts/OrderBook';
 import TickerTape from '../components/Charts/TickerTape';
-import { getListings, getChartData } from '../services/api';
+import { getChartData } from '../services/api';
+import { useMarket } from '../context/MarketContext';
 import { formatCurrency, formatPercent } from '../utils/format';
 
 const COIN_COLORS = {
@@ -54,6 +55,7 @@ function StatPill({ label, value, color }) {
 }
 
 export default function TradingPage() {
+  const { listings: liveListings } = useMarket();
   const [listings, setListings] = useState([]);
   const [selected, setSelected] = useState(null);
   const [prices7d, setPrices7d] = useState([]);
@@ -65,18 +67,17 @@ export default function TradingPage() {
   const fullRef = useRef(null);
 
   useEffect(() => {
-    getListings().then(r => {
-      const d = r.data.data;
-      setListings(d);
-      if (!selected) setSelected(d[0] || null);
+    if (liveListings && liveListings.length > 0) {
+      setListings(liveListings);
+      if (!selected) setSelected(liveListings[0]);
+      
+      if (selected) {
+        const updatedSelected = liveListings.find(c => c.symbol === selected.symbol);
+        if (updatedSelected) setSelected(updatedSelected);
+      }
       setLoading(false);
-    }).catch(() => setLoading(false));
-
-    const iv = setInterval(() =>
-      getListings().then(r => setListings(r.data.data)).catch(() => {}),
-    15000);
-    return () => clearInterval(iv);
-  }, []);
+    }
+  }, [liveListings, selected?.symbol]);
 
   useEffect(() => {
     if (!selected) return;
@@ -169,6 +170,9 @@ export default function TradingPage() {
               </div>
 
               <div style={{ marginLeft: 'auto', display: 'flex', gap: 12 }}>
+                <button onClick={() => setRightPanel('ai')} className={`v4-tactical-action ${rightPanel === 'ai' ? 'active' : ''}`}>AI EXECUTION</button>
+                <button onClick={() => setRightPanel('order')} className={`v4-tactical-action ${rightPanel === 'order' ? 'active' : ''}`}>ORDER BOOK</button>
+                <button onClick={() => setRightPanel('liq')} className={`v4-tactical-action ${rightPanel === 'liq' ? 'active' : ''}`}>LIQUIDITY</button>
                 <button onClick={() => toggleWatch(selected.symbol)} className={`v4-tactical-action ${watchSyms.includes(selected.symbol) ? 'active' : ''}`}>
                   {watchSyms.includes(selected.symbol) ? 'UNPIN_NODE' : 'PIN_NODE'}
                 </button>
