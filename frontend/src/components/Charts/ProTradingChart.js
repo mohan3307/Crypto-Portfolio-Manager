@@ -47,16 +47,32 @@ const buildCandles = (data, count = 80) => {
   if (!data.length) return [];
   const chunk = Math.max(1, Math.floor(data.length / count));
   const out = [];
-  for (let i = 0; i + chunk <= data.length; i += chunk) {
+  for (let i = 0; i < data.length; i += chunk) {
     const sl = data.slice(i, i + chunk);
+    if (!sl.length) continue;
+    
     const prices = sl.map(d => d.price);
+    let open = prices[0];
+    let close = prices[prices.length - 1];
+    let high = Math.max(...prices);
+    let low = Math.min(...prices);
+
+    // Enhance visualization by generating synthetic wicks if the chunk lacks volatility
+    if (prices.length === 1) {
+      const prevClose = out.length > 0 ? out[out.length - 1].close : open;
+      open = prevClose; // Connect to prev candle
+      const v = open * 0.005;
+      high = Math.max(open, close) + (Math.random() * v);
+      low = Math.min(open, close) - (Math.random() * v);
+    }
+
     out.push({
       time: sl[0].time,
-      open: prices[0],
-      close: prices[prices.length - 1],
-      high: Math.max(...prices),
-      low: Math.min(...prices),
-      volume: prices[prices.length - 1] * (Math.random() * 8000 + 2000),
+      open,
+      close,
+      high,
+      low,
+      volume: close * (Math.random() * 8000 + 2000),
     });
   }
   return out;

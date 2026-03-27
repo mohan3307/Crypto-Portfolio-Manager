@@ -45,14 +45,33 @@ const buildCandles = (data) => {
   if (!data.length) return [];
   const chunk = Math.max(1, Math.floor(data.length / 60));
   const candles = [];
-  for (let i = 0; i < data.length - chunk; i += chunk) {
+  
+  for (let i = 0; i < data.length - chunk + 1; i += chunk) {
     const slice = data.slice(i, i + chunk).map(d => d.price);
-    const open = slice[0], close = slice[slice.length - 1];
+    if (!slice.length) continue;
+    
+    let open = slice[0];
+    let close = slice[slice.length - 1];
+    let high = Math.max(...slice);
+    let low = Math.min(...slice);
+
+    // If chunk is 1, open/close/high/low are identical (flat line).
+    // Synthesize realistic wicks & body for visual candlestick appearance.
+    if (slice.length === 1) {
+      const prevClose = candles.length > 0 ? candles[candles.length - 1].close : open;
+      open = prevClose; // Connect to previous close
+      const volatility = open * 0.005; // 0.5% artificial wick volatility
+      
+      // Ensure high is strictly higher than max(open, close), low strictly lower
+      high = Math.max(open, close) + (Math.random() * volatility);
+      low = Math.min(open, close) - (Math.random() * volatility);
+    }
+
     candles.push({
       time: data[i].time,
       open,
-      high: Math.max(...slice),
-      low: Math.min(...slice),
+      high,
+      low,
       close,
       volume: Math.random() * 5000000 + 500000
     });

@@ -52,7 +52,7 @@ function TradingViewChart({ symbol = 'BTC' }) {
         new window.TradingView.widget({
           autosize: true,
           symbol: tvSymbol,
-          interval: 'D',
+          interval: '15',
           timezone: 'Etc/UTC',
           theme: 'dark',
           style: '1',
