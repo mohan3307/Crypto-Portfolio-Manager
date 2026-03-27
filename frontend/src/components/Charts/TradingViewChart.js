@@ -34,44 +34,61 @@ const TV_SYMBOL_MAP = {
 
 const getTVSymbol = (symbol) => TV_SYMBOL_MAP[symbol] || `BINANCE:${symbol}USDT`;
 
+let tvScriptLoadingPromise;
+
 function TradingViewChart({ symbol = 'BTC' }) {
   const containerRef = useRef(null);
   const tvSymbol = getTVSymbol(symbol);
+  
+  // Stable ID mapping to the symbol
+  const containerId = `tv_widget_core_${symbol}`;
 
   useEffect(() => {
-    // We construct the official TradingView script injector which completely eliminates
-    // iframe race conditions via strict evaluation of its inner JSON payload.
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-    script.type = 'text/javascript';
-    script.async = true;
-    script.innerHTML = `
-      {
-        "autosize": true,
-        "symbol": "${tvSymbol}",
-        "interval": "15",
-        "timezone": "Etc/UTC",
-        "theme": "dark",
-        "style": "1",
-        "locale": "en",
-        "enable_publishing": false,
-        "backgroundColor": "#04070d",
-        "gridColor": "#1a2840",
-        "hide_top_toolbar": false,
-        "hide_legend": false,
-        "save_image": false,
-        "calendar": false,
-        "hide_volume": false,
-        "support_host": "https://www.tradingview.com"
-      }
-    `;
+    let widgetInstance = null;
+    let isMounted = true;
 
-    if (containerRef.current) {
-      containerRef.current.innerHTML = '';
-      containerRef.current.appendChild(script);
+    const onLoadScriptRef = () => {
+      if (!isMounted) return;
+      if (typeof window.TradingView !== 'undefined' && containerRef.current) {
+        // Clear previous runs
+        containerRef.current.innerHTML = '';
+        
+        widgetInstance = new window.TradingView.widget({
+          autosize: true,
+          symbol: tvSymbol,
+          interval: '15',
+          timezone: 'Etc/UTC',
+          theme: 'dark',
+          style: '1',
+          locale: 'en',
+          enable_publishing: false,
+          hide_side_toolbar: false,
+          allow_symbol_change: true,
+          container_id: containerRef.current.id,
+        });
+      }
+    };
+
+    if (!tvScriptLoadingPromise) {
+      tvScriptLoadingPromise = new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.id = 'tradingview-widget-loading-script';
+        script.src = 'https://s3.tradingview.com/tv.js';
+        script.type = 'text/javascript';
+        script.onload = resolve;
+        document.head.appendChild(script);
+      });
     }
 
+    tvScriptLoadingPromise.then(onLoadScriptRef);
+
     return () => {
+      isMounted = false;
+      if (widgetInstance && typeof widgetInstance.remove === 'function') {
+        try {
+          widgetInstance.remove();
+        } catch (e) { }
+      }
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
       }
@@ -80,7 +97,7 @@ function TradingViewChart({ symbol = 'BTC' }) {
 
   return (
     <div className="tradingview-widget-container" style={{ height: '100%', width: '100%', minHeight: '500px' }}>
-      <div className="tradingview-widget-container__widget" style={{ height: '100%', width: '100%' }} ref={containerRef}></div>
+      <div id={containerId} ref={containerRef} style={{ height: '100%', width: '100%' }}></div>
     </div>
   );
 }

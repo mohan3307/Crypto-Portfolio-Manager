@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ProTradingChart from '../components/Charts/ProTradingChart';
+import TradingViewChart from '../components/Charts/TradingViewChart';
 import ExecutionBlade from '../components/Tools/ExecutionBlade';
 import NewsFeed from '../components/Charts/NewsFeed';
 import AIPredictionPanel from '../components/Charts/AIPredictionPanel';
@@ -177,12 +177,9 @@ export default function TradingPage() {
 
           <div className="pro-chart-container">
             {selected && (
-              <ProTradingChart 
+              <TradingViewChart 
                 key={selected.symbol} 
                 symbol={selected.symbol} 
-                coinName={selected.name}
-                coinColor={coinColor}
-                logo={selected.logo}
               />
             )}
             <div className="pro-watermark">CRYPTONOVA TERMINAL v4.2 // SECURE_SOCKET</div>
