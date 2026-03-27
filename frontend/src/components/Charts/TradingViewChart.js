@@ -44,12 +44,14 @@ function TradingViewChart({ symbol = 'BTC' }) {
   const uniqueIdRef = useRef(`tv_chart_${Math.random().toString(36).substring(7)}`);
 
   useEffect(() => {
+    let tvWidget = null;
+    let isMounted = true;
+
     const onLoadScriptRef = () => {
+      if (!isMounted) return;
       if (typeof window.TradingView !== 'undefined' && containerRef.current) {
-        // Clear previous widget
         containerRef.current.innerHTML = '';
-        
-        new window.TradingView.widget({
+        tvWidget = new window.TradingView.widget({
           autosize: true,
           symbol: tvSymbol,
           interval: '15',
@@ -57,14 +59,9 @@ function TradingViewChart({ symbol = 'BTC' }) {
           theme: 'dark',
           style: '1',
           locale: 'en',
-          backgroundColor: 'rgba(4, 7, 13, 1)',
-          gridColor: 'rgba(26, 40, 64, 0.5)',
-          withdateranges: true,
+          enable_publishing: false,
           hide_side_toolbar: false,
           allow_symbol_change: true,
-          save_image: false,
-          calendar: false,
-          hide_volume: false,
           container_id: uniqueIdRef.current,
         });
       }
@@ -84,6 +81,14 @@ function TradingViewChart({ symbol = 'BTC' }) {
     tvScriptLoadingPromise.then(onLoadScriptRef);
 
     return () => {
+      isMounted = false;
+      if (tvWidget && tvWidget.remove) {
+        try {
+          tvWidget.remove();
+        } catch (e) {
+          console.warn("Error removing TV widget:", e);
+        }
+      }
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
       }
