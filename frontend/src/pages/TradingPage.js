@@ -310,7 +310,7 @@ export default function TradingPage() {
         }
 
         .pro-chart-container {
-          flex: 1; padding: 24px; position: relative; display: flex; flex-direction: column; overflow: hidden;
+          flex: 1; padding: 0; position: relative; display: flex; flex-direction: column; overflow: hidden;
         }
 
         .pro-watermark {
