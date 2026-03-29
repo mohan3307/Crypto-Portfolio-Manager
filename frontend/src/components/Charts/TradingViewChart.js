@@ -96,7 +96,7 @@ function TradingViewChart({ symbol = 'BTC' }) {
   }, [tvSymbol]);
 
   return (
-    <div className="tradingview-widget-container" style={{ height: '100%', width: '100%', minHeight: '500px' }}>
+    <div className="tradingview-widget-container" style={{ height: '100%', width: '100%', position: 'absolute', inset: 0 }}>
       <div id={containerId} ref={containerRef} style={{ height: '100%', width: '100%' }}></div>
     </div>
   );
