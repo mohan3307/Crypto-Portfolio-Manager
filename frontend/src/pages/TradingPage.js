@@ -64,6 +64,7 @@ export default function TradingPage() {
   const [watchSyms, setWatchSyms] = useState(DEFAULT_WATCH);
   const [rightPanel, setRightPanel] = useState('ai');
   const [fullScreen, setFullScreen] = useState(false);
+  const [chartFocus, setChartFocus] = useState(false);
   const fullRef = useRef(null);
 
   useEffect(() => {
@@ -116,10 +117,10 @@ export default function TradingPage() {
     <div ref={fullRef} className="pro-terminal-wrapper" style={{ height: fullScreen ? '100vh' : 'calc(100vh - 80px)' }}>
       {!fullScreen && <TickerTape listings={listings} />}
 
-      <div className="pro-grid-layout" style={{ gridTemplateColumns: fullScreen ? '240px minmax(0, 1fr)' : '280px minmax(0, 1fr) 380px' }}>
+      <div className="pro-grid-layout" style={{ gridTemplateColumns: (fullScreen || chartFocus) ? 'minmax(0, 1fr)' : '280px minmax(0, 1fr) 380px' }}>
         
         {/* ── LEFT: Asset Navigator ── */}
-        <div className="pro-panel border-right" style={{ background: '#020202' }}>
+        {!chartFocus && !fullScreen && <div className="pro-panel border-right" style={{ background: '#020202' }}>
           <div className="pro-panel-header">
             <div className="pro-header-title">TACTICAL NAVIGATOR</div>
             <div className="pro-search-box">
@@ -140,7 +141,7 @@ export default function TradingPage() {
             )}
             {search && searchResult.map(coin => <CoinRow key={coin.id} coin={coin} selected={selected} onSelect={setSelected} watching={watchSyms.includes(coin.symbol)} coinColor={COIN_COLORS[coin.symbol]} />)}
           </div>
-        </div>
+        </div>}
 
         {/* ── CENTER: Tactical Charting ── */}
         <div className="pro-panel" style={{ background: '#000', position: 'relative' }}>
@@ -161,16 +162,25 @@ export default function TradingPage() {
               </div>
 
               <div className="pro-actions-group">
-                {['ai', 'order', 'liq'].map(id => (
+                {!chartFocus && ['ai', 'order', 'liq'].map(id => (
                   <button key={id} onClick={() => setRightPanel(id)} className={`pro-btn ${rightPanel === id ? 'active' : ''}`}>
                     {id === 'ai' ? 'EXECUTION' : id === 'order' ? 'ORDER BOOK' : 'LIQUIDITY'}
                   </button>
                 ))}
                 <div className="pro-divider-v" />
-                <button onClick={() => toggleWatch(selected.symbol)} className={`pro-btn ${watchSyms.includes(selected.symbol) ? 'active' : ''}`}>
-                  {watchSyms.includes(selected.symbol) ? '★ PINNED' : '☆ PIN'}
+                {!chartFocus && (
+                  <button onClick={() => toggleWatch(selected.symbol)} className={`pro-btn ${watchSyms.includes(selected.symbol) ? 'active' : ''}`}>
+                    {watchSyms.includes(selected.symbol) ? '★ PINNED' : '☆ PIN'}
+                  </button>
+                )}
+                <button
+                  onClick={() => setChartFocus(f => !f)}
+                  className={`pro-btn ${chartFocus ? 'active' : ''}`}
+                  title="Toggle Chart-Only Mode"
+                >
+                  {chartFocus ? '⊞ PANELS' : '⊟ CHART ONLY'}
                 </button>
-                <button onClick={toggleFullscreen} className="pro-btn">⛶ FOCUS</button>
+                <button onClick={toggleFullscreen} className="pro-btn" title="Browser Fullscreen">⛶ FULLSCREEN</button>
               </div>
             </div>
           )}
@@ -187,7 +197,7 @@ export default function TradingPage() {
         </div>
 
         {/* ── RIGHT: Strategic Intel ── */}
-        {!fullScreen && selected && (
+        {!fullScreen && !chartFocus && selected && (
           <div className="pro-panel border-left" style={{ background: '#020202' }}>
             <div className="pro-scroller">
               {rightPanel === 'ai'    && <ExecutionBlade symbol={selected.symbol} currentPrice={selected.price} />}
